@@ -26,14 +26,14 @@ class generic_tag {
 public:
 
 	/*
-	 * Tag type
-	 */
-	char type;
-
-	/*
 	 * Tag name
 	 */
 	std::string name;
+
+	/*
+	 * Tag type
+	 */
+	char type;
 
 	/*
 	 * Supported tag types
@@ -48,7 +48,7 @@ public:
 	/*
 	 * Generic tag constructor
 	 */
-	generic_tag(const generic_tag &other) : type(other.type), name(other.name) { return; }
+	generic_tag(const generic_tag &other) : name(other.name), type(other.type) { return; }
 
 	/*
 	 * Generic tag constructor
@@ -58,7 +58,7 @@ public:
 	/*
 	 * Generic tag constructor
 	 */
-	generic_tag(const std::string &name, char type) : type(type), name(name) { return; }
+	generic_tag(const std::string &name, char type) : name(name), type(type) { return; }
 
 	/*
 	 * Generic tag destructor

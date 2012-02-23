@@ -29,11 +29,6 @@ class byte_stream {
 private:
 
 	/*
-	 * Swap endian
-	 */
-	bool swap;
-
-	/*
 	 * Stream buffer
 	 */
 	int8_t *buff;
@@ -42,6 +37,11 @@ private:
 	 * Stream buffer length/position
 	 */
 	size_t len, pos;
+
+	/*
+	 * Swap endian
+	 */
+	bool swap;
 
 	/*
 	 * Read byte stream into variable

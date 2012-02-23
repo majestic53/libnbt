@@ -27,19 +27,19 @@ class region_chunk {
 private:
 
 	/*
-	 * Chunk compression type
+	 * Chunk last modified time
 	 */
-	unsigned int type;
+	time_t modified;
 
 	/*
 	 * Chunk size, position
 	 */
-	size_t size, pos;
+	size_t pos, size;
 
 	/*
-	 * Chunk last modified time
+	 * Chunk compression type
 	 */
-	time_t modified;
+	unsigned int type;
 
 public:
 
@@ -61,7 +61,7 @@ public:
 	/*
 	 * Region chunk constructor
 	 */
-	region_chunk(unsigned int type, size_t size, size_t pos, time_t modified) : type(type), size(size), pos(pos), modified(modified) { return; }
+	region_chunk(unsigned int type, size_t size, size_t pos, time_t modified) : modified(modified), pos(pos), size(size), type(type) { return; }
 
 	/*
 	 * Region chunk destructor
