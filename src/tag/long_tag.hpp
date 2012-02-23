@@ -28,7 +28,7 @@ public:
 	/*
 	 * Long tag value
 	 */
-	long value;
+	int64_t value;
 
 	/*
 	 * Long tag constructor
@@ -43,12 +43,12 @@ public:
 	/*
 	 * Long tag constructor
 	 */
-	long_tag(long value) : generic_tag(LONG), value(value) { return; }
+	long_tag(int64_t value) : generic_tag(LONG), value(value) { return; }
 
 	/*
 	 * Long tag constructor
 	 */
-	long_tag(const std::string &name, long value) : generic_tag(name, LONG), value(value) { return; }
+	long_tag(const std::string &name, int64_t value) : generic_tag(name, LONG), value(value) { return; }
 
 	/*
 	 * Long tag destructor

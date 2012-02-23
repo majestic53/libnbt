@@ -21,11 +21,12 @@
 #define REGION_FILE_HPP_
 
 #include <boost/regex.hpp>
+#include <cstdint>
 #include <fstream>
 #include <string>
 #include <vector>
 #include "byte_stream.hpp"
-#include "region_chunk.hpp"
+#include "region_chunk_info.hpp"
 #include "region_file_exc.hpp"
 #include "tag/byte_array_tag.hpp"
 #include "tag/byte_tag.hpp"
@@ -51,7 +52,7 @@ private:
 	/*
 	 * Array of chunk files
 	 */
-	region_chunk *chunks;
+	region_chunk_info *info;
 
 	/*
 	 * Region file
@@ -76,7 +77,17 @@ private:
 	/*
 	 * ZLib inflation routine
 	 */
-	int inflate_zlib(std::vector<char> &in, std::vector<char> &out);
+	int inflate_zlib(std::vector<int8_t> &in, std::vector<int8_t> &out);
+
+	/*
+	 * Creates a tag from stream
+	 */
+	generic_tag *read_tag(const std::string &name, unsigned int type, byte_stream &stream);
+
+	/*
+	 * Reads a tag value from stream
+	 */
+	void *read_value(unsigned int type, byte_stream &stream);
 
 public:
 
@@ -118,7 +129,7 @@ public:
 	/*
 	 * Region file destructor
 	 */
-	virtual ~region_file(void) { delete[] chunks; }
+	virtual ~region_file(void) { delete[] info; }
 
 	/*
 	 * Region file assignment
@@ -151,12 +162,17 @@ public:
 	/*
 	 * Returnd region chunk data at a given x, z coord
 	 */
-	int get_chunk_data(unsigned int x, unsigned int z, std::vector<char> &data);
+	int get_chunk_data(unsigned int x, unsigned int z, std::vector<int8_t> &data);
 
 	/*
 	 * Returns region chunk information at a given x, z coord
 	 */
-	bool get_chunk_info(unsigned int x, unsigned int z, region_chunk &info);
+	bool get_chunk_info(unsigned int x, unsigned int z, region_chunk_info &info);
+
+	/*
+	 * Returns chunk data tag at a given x, z coord
+	 */
+	void get_chunk_tag(unsigned int x, unsigned int z, generic_tag *tag);
 
 	/*
 	 * Returns total region chunks filled within a region file

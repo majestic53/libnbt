@@ -57,7 +57,7 @@ bool byte_array_tag::operator==(const byte_array_tag &other) {
 /*
  * Returns a byte value at a given index in a byte array tag
  */
-char byte_array_tag::at(unsigned int index) {
+int8_t byte_array_tag::at(unsigned int index) {
 	if(index >= value.size())
 		return 0;
 	return value.at(index);

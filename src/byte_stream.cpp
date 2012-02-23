@@ -36,7 +36,7 @@ byte_stream::byte_stream(void) {
 byte_stream::byte_stream(const byte_stream &other) {
 	len = other.len;
 	pos = other.pos;
-	buff = new char[other.len];
+	buff = new int8_t[other.len];
 	if(!buff) {
 		len = 0;
 		pos = 0;
@@ -53,7 +53,7 @@ byte_stream::byte_stream(const byte_stream &other) {
 byte_stream::byte_stream(const std::string &input) {
 	len = input.length();
 	pos = 0;
-	buff = new char[input.length()];
+	buff = new int8_t[input.length()];
 	if(!buff) {
 		len = 0;
 		pos = 0;
@@ -61,6 +61,23 @@ byte_stream::byte_stream(const std::string &input) {
 	}
 	for(unsigned int i = 0; i < len; ++i)
 		buff[i] = input[i];
+	swap = NO_SWAP_ENDIAN;
+}
+
+/*
+ * Byte stream constructor
+ */
+byte_stream::byte_stream(std::vector<int8_t> &input) {
+	len = input.size();
+	pos = 0;
+	buff = new int8_t[input.size()];
+	if(!buff) {
+		len = 0;
+		pos = 0;
+		return;
+	}
+	for(unsigned int i = 0; i < len; ++i)
+		buff[i] = input.at(i);
 	swap = NO_SWAP_ENDIAN;
 }
 
@@ -76,7 +93,7 @@ byte_stream &byte_stream::operator=(const byte_stream &other) {
 	// set attributes
 	len = other.len;
 	pos = other.pos;
-	buff = new char[other.len];
+	buff = new int8_t[other.len];
 	if(!buff) {
 		len = 0;
 		pos = 0;
@@ -113,7 +130,7 @@ bool byte_stream::operator==(const byte_stream &other) {
 bool byte_stream::operator<<(const std::string &input) {
 
 	// create new buffer
-	char *n_buff = new char[input.length()];
+	int8_t *n_buff = new int8_t[input.length()];
 	if(!n_buff)
 		return false;
 	for(unsigned int i = 0; i < input.length(); ++i)
@@ -148,7 +165,7 @@ bool byte_stream::operator<<(int flag) {
 /*
  * Byte stream output
  */
-bool byte_stream::operator>>(char &output) {
+bool byte_stream::operator>>(int8_t &output) {
 
 	// check if end of stream is reached
 	if(available() == END_OF_STREAM)
@@ -162,7 +179,7 @@ bool byte_stream::operator>>(char &output) {
 /*
  * Byte stream output
  */
-bool byte_stream::operator>>(short &output) {
+bool byte_stream::operator>>(int16_t &output) {
 
 	// check if end of stream is reached
 	if(available() == END_OF_STREAM)
@@ -175,7 +192,7 @@ bool byte_stream::operator>>(short &output) {
 /*
  * Byte stream output
  */
-bool byte_stream::operator>>(int &output) {
+bool byte_stream::operator>>(int32_t &output) {
 
 	// check if end of stream is reached
 	if(available() == END_OF_STREAM)
@@ -188,7 +205,7 @@ bool byte_stream::operator>>(int &output) {
 /*
  * Byte stream output
  */
-bool byte_stream::operator>>(long &output) {
+bool byte_stream::operator>>(int64_t &output) {
 
 	// check if end of stream is reached
 	if(available() == END_OF_STREAM)
@@ -227,8 +244,8 @@ bool byte_stream::operator>>(double &output) {
 /*
  * Returns the available bytes left in the stream
  */
-size_t byte_stream::available(void) {
-	size_t remaining = len - pos;
+unsigned int byte_stream::available(void) {
+	unsigned int remaining = len - pos;
 	if(remaining <= 0)
 		return END_OF_STREAM;
 	return remaining;

@@ -17,6 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
+
+
 #include <sstream>
 #include <zlib.h>
 #include "region_file.hpp"
@@ -30,8 +33,8 @@ const boost::regex region_file::PATTERN = boost::regex("r\\.([-]?[0-9]+)\\.([-]?
  * Region file constructor
  */
 region_file::region_file(void) : filled(0), x(0), z(0) {
-	chunks = new region_chunk[CHUNK_COUNT];
-	if(!chunks)
+	info = new region_chunk_info[CHUNK_COUNT];
+	if(!info)
 		throw region_file_exc(region_file_exc::ALLOC_FAIL);
 }
 
@@ -39,21 +42,22 @@ region_file::region_file(void) : filled(0), x(0), z(0) {
  * Region file constructor
  */
 region_file::region_file(const region_file &other) : filled(other.filled), path(other.path), x(other.x), z(other.z) {
-	chunks = new region_chunk[CHUNK_COUNT];
-	if(!chunks)
+	info = new region_chunk_info[CHUNK_COUNT];
+	if(!info)
 		throw region_file_exc(region_file_exc::ALLOC_FAIL);
 
 	// assign all attributes
+	file.close();
 	for(unsigned int i = 0; i < CHUNK_COUNT; ++i)
-		chunks[i] = other.chunks[i];
+		info[i] = other.info[i];
 }
 
 /*
  * Region file constructor
  */
 region_file::region_file(const std::string &path) : filled(0), path(path), x(0), z(0) {
-	chunks = new region_chunk[CHUNK_COUNT];
-	if(!chunks)
+	info = new region_chunk_info[CHUNK_COUNT];
+	if(!info)
 		throw region_file_exc(region_file_exc::ALLOC_FAIL);
 
 	// parse the filename for coordinants
@@ -83,16 +87,17 @@ region_file &region_file::operator=(const region_file &other) {
 		return *this;
 
 	// assign attributes
+	file.close();
 	filled = other.filled;
 	path = other.path;
 	x = other.x;
 	z = other.z;
-	delete[] chunks;
-	chunks = new region_chunk[CHUNK_COUNT];
-	if(!chunks)
+	delete[] info;
+	info = new region_chunk_info[CHUNK_COUNT];
+	if(!info)
 		throw region_file_exc(region_file_exc::ALLOC_FAIL);
 	for(unsigned int i = 0; i < CHUNK_COUNT; ++i)
-		chunks[i] = other.chunks[i];
+		info[i] = other.info[i];
 	return *this;
 }
 
@@ -112,7 +117,7 @@ bool region_file::operator==(const region_file &other) {
 			|| z != other.z)
 		return false;
 	for(unsigned int i = 0; i < CHUNK_COUNT; ++i)
-		if(chunks[i] != other.chunks[i])
+		if(info[i] != other.info[i])
 			return false;
 	return true;
 }
@@ -120,18 +125,18 @@ bool region_file::operator==(const region_file &other) {
 /*
  * Returnd region chunk data at a given x, z coord
  */
-int region_file::get_chunk_data(unsigned int x, unsigned int z, std::vector<char> &data) {
+int region_file::get_chunk_data(unsigned int x, unsigned int z, std::vector<int8_t> &data) {
 
 	// Check to see if (x, z) are out-of-bounds
 	if(x + z * REGION_SIZE >= CHUNK_COUNT)
 		throw region_file_exc(region_file_exc::OUT_OF_BOUNDS);
 
 	// gather chunk info
-	region_chunk chunk = chunks[x + z * REGION_SIZE];
-	int comp_size = chunk.get_size();
+	region_chunk_info chunk_info = info[x + z * REGION_SIZE];
+	int comp_size = chunk_info.get_size();
 
 	// check if chunk is empty
-	if(chunk.get_position() == 0) {
+	if(chunk_info.get_position() == 0) {
 		data.clear();
 		return 0;
 	}
@@ -145,22 +150,21 @@ int region_file::get_chunk_data(unsigned int x, unsigned int z, std::vector<char
 		throw region_file_exc(region_file_exc::INVALID_PATH, path);
 
 	// read data from file
-	std::vector<char> in_buff;
-	char *comp_buff = new char[comp_size];
-	chunk_file.seekg(chunk.get_position(), std::ios::beg);
-	chunk_file.read(comp_buff, comp_size);
-	in_buff.assign(comp_buff, comp_buff + comp_size);
-	delete[] comp_buff;
+	std::vector<int8_t> comp_vec;
+	int8_t comp_buff[comp_size];
+	chunk_file.seekg(chunk_info.get_position(), std::ios::beg);
+	chunk_file.read((char *) comp_buff, comp_size);
+	comp_vec.assign(comp_buff, comp_buff + comp_size);
 
 	// close file
 	chunk_file.close();
 
 	// decompress data
 	int size = 0;
-	switch(chunk.get_type()) {
-		case region_chunk::GZIP: throw region_file_exc(region_file_exc::UNSUPPORTED_COMPRESSION);
+	switch(chunk_info.get_type()) {
+		case region_chunk_info::GZIP: throw region_file_exc(region_file_exc::UNSUPPORTED_COMPRESSION);
 			break;
-		case region_chunk::ZLIB: size = inflate_zlib(in_buff, data);
+		case region_chunk_info::ZLIB: size = inflate_zlib(comp_vec, data);
 			break;
 		default: throw region_file_exc(region_file_exc::UNKNOWN_COMPRESSION);
 			break;
@@ -173,21 +177,62 @@ int region_file::get_chunk_data(unsigned int x, unsigned int z, std::vector<char
 /*
  * Returns region chunk information at a given x, z coord
  */
-bool region_file::get_chunk_info(unsigned int x, unsigned int z, region_chunk &info) {
+bool region_file::get_chunk_info(unsigned int x, unsigned int z, region_chunk_info &info) {
 
 	// check if coord are out-of-bounds
 	if(x + z * REGION_SIZE >= CHUNK_COUNT)
 		return false;
 
 	// assign chunk info
-	info = region_chunk(chunks[x + z * REGION_SIZE]);
+	info = region_chunk_info(this->info[x + z * REGION_SIZE]);
 	return true;
+}
+
+/*
+ * Returns chunk data tag at a given x, z coord
+ */
+void region_file::get_chunk_tag(unsigned int x, unsigned int z, generic_tag *tag) {
+
+	// Check to see if (x, z) are out-of-bounds
+	if(x + z * REGION_SIZE >= CHUNK_COUNT)
+		throw region_file_exc(region_file_exc::OUT_OF_BOUNDS);
+
+	// collect chunk data
+	int8_t type;
+	std::vector<int8_t> data;
+	get_chunk_data(x, z, data);
+
+	// setup stream from data
+	byte_stream stream(data);
+	stream << byte_stream::NO_SWAP_ENDIAN;
+
+	// parse data for tags
+	stream >> type;
+
+	delete tag;
+	if(type == generic_tag::END)
+		tag = new end_tag;
+	else {
+		int8_t ch;
+		int16_t name_len;
+		stream >> name_len;
+		std::string name;
+		for(int i = 0; i < name_len; i++) {
+			stream >> ch;
+			name += ch;
+		}
+		tag = read_tag(name, type, stream);
+
+		// TODO: create an object to manage tags
+
+		// TODO: add a function to retrieve a subtag by name
+	}
 }
 
 /*
  * ZLib inflation routine
  */
-int region_file::inflate_zlib(std::vector<char> &in, std::vector<char> &out) {
+int region_file::inflate_zlib(std::vector<int8_t> &in, std::vector<int8_t> &out) {
 	z_stream str;
 	int ret, pos = 0;
 
@@ -204,8 +249,8 @@ int region_file::inflate_zlib(std::vector<char> &in, std::vector<char> &out) {
 		int size = SEGMENT_SIZE;
 		if((unsigned int) (in.size() - pos) < SEGMENT_SIZE)
 			size = in.size() - pos;
-		char *in_buff = new char[size];
-		char *out_buff = new char[size];
+		int8_t in_buff[size];
+		int8_t out_buff[size];
 		for(int i = 0; i < size; i++)
 			in_buff[i] = in.at(pos + i);
 		str.avail_in = size;
@@ -218,8 +263,6 @@ int region_file::inflate_zlib(std::vector<char> &in, std::vector<char> &out) {
 				out.push_back(out_buff[i]);
 		} while(str.avail_out == 0);
 		pos += size;
-		delete[] in_buff;
-		delete[] out_buff;
 	} while(ret != Z_STREAM_END);
 
 	// end inflation
@@ -263,7 +306,7 @@ void region_file::read(const std::string &path) {
 	for(unsigned int i = 0; i < CHUNK_COUNT; i++) {
 		int size = 0;
 		char comp_type = 0;
-		region_chunk chunk;
+		region_chunk_info chunk_info;
 
 		// retrieve chunk size, compression type, & data if chunk exists
 		if(pos[i] != 0) {
@@ -273,15 +316,148 @@ void region_file::read(const std::string &path) {
 			convert_endian(size);
 			file.read(&comp_type, sizeof(char));
 			pos[i] = file.tellg();
-			chunk = region_chunk(comp_type, size, pos[i], time[i]);
+			chunk_info = region_chunk_info(comp_type, size, pos[i], time[i]);
 		}
 
 		// create all chunks
-		chunks[i] = chunk;
+		info[i] = chunk_info;
 	}
 
 	// close file
 	file.close();
+}
+
+/*
+ * Creates a tag from stream
+ */
+generic_tag *region_file::read_tag(const std::string &name, unsigned int type, byte_stream &stream) {
+
+	// create tag
+	generic_tag *tag = NULL;
+
+	// assign tag based off type
+	switch(type) {
+		case generic_tag::BYTE:
+			tag = new byte_tag(name, *((int8_t *) read_value(type, stream)));
+			break;
+		case generic_tag::BYTE_ARRAY:
+			tag = new byte_array_tag(name, *((std::vector<int8_t> *) read_value(type, stream)));
+			break;
+		case generic_tag::COMPOUND:
+			tag = new compound_tag(name, *((std::vector<generic_tag *> *) read_value(type, stream)));
+			break;
+		case generic_tag::DOUBLE:
+			tag = new double_tag(name, *((double *) read_value(type, stream)));
+			break;
+		case generic_tag::END:
+			tag = new end_tag;
+			break;
+		case generic_tag::FLOAT:
+			tag = new float_tag(name, *((float *) read_value(type, stream)));
+			break;
+		case generic_tag::INT:
+			tag = new int_tag(name, *((int32_t *) read_value(type, stream)));
+			break;
+		case generic_tag::LIST:
+			tag = new list_tag(name, *((std::vector<generic_tag *> *) read_value(type, stream)));
+			break;
+		case generic_tag::LONG:
+			tag = new long_tag(name, *((int64_t *) read_value(type, stream)));
+			break;
+		case generic_tag::SHORT:
+			tag = new short_tag(name, *((int16_t *) read_value(type, stream)));
+			break;
+		case generic_tag::STRING:
+			tag = new string_tag(name, *((std::string *) read_value(type, stream)));
+			break;
+		default:
+			throw region_file_exc(region_file_exc::UNKNOWN_TAG_TYPE);
+	}
+	return tag;
+}
+
+/*
+ * Reads a tag value from stream
+ */
+void *region_file::read_value(unsigned int type, byte_stream &stream) {
+	int32_t len;
+	int16_t str_len = 0, name_len = 0;
+	int8_t ch, byte_ele = 0, ele_type = 0;
+
+	// create value
+	void *value = NULL;
+	std::string name;
+	name.clear();
+
+	// assign value based off type
+	switch(type) {
+		case generic_tag::BYTE:
+			value = new int8_t;
+			stream >> *((int8_t *) value);
+			break;
+		case generic_tag::BYTE_ARRAY:
+			stream >> len;
+			len = abs(len);
+			value = new std::vector<int8_t>;
+			for(int i = 0; i < len; i++) {
+				stream >> byte_ele;
+				((std::vector<int8_t> *) value)->push_back(byte_ele);
+			}
+		break;
+		case generic_tag::COMPOUND:
+			value = new std::vector<generic_tag *>;
+			do {
+				stream >> ele_type;
+				if(ele_type != generic_tag::END) {
+					stream >> name_len;
+					name.clear();
+					for(int i = 0; i < name_len; i++) {
+						stream >> ch;
+						name += ch;
+					}
+					((std::vector<generic_tag *> *) value)->push_back(read_tag(name, ele_type, stream));
+				}
+			} while(ele_type != generic_tag::END);
+			break;
+		case generic_tag::DOUBLE:
+			value = new double;
+			stream >> *((double *) value);
+			break;
+		case generic_tag::FLOAT:
+			value = new float;
+			stream >> *((float *) value);
+			break;
+		case generic_tag::INT:
+			value = new int32_t;
+			stream >> *((int32_t *) value);
+			break;
+		case generic_tag::LIST:
+			stream >> ele_type;
+			stream >> len;
+			len = abs(len);
+			value = new std::vector<generic_tag *>;
+			for(int i = 0; i < len; i++) {
+				((std::vector<generic_tag *> *) value)->push_back(read_tag("", ele_type, stream));
+			}
+			break;
+		case generic_tag::LONG:
+			value = new int64_t;
+			stream >> *((int64_t *) value);
+			break;
+		case generic_tag::SHORT:
+			value = new int16_t;
+			stream >> *((int16_t *) value);
+			break;
+		case generic_tag::STRING:
+			stream >> str_len;
+			value = new std::string;
+			for(int i = 0; i < str_len; i++) {
+				stream >> ch;
+				*((std::string *) value) += ch;
+			}
+			break;
+	}
+	return value;
 }
 
 /*

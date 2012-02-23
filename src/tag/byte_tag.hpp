@@ -20,6 +20,7 @@
 #ifndef BYTE_TAG_HPP_
 #define BYTE_TAG_HPP_
 
+#include <cstdint>
 #include "generic_tag.hpp"
 
 class byte_tag : public generic_tag {
@@ -28,7 +29,7 @@ public:
 	/*
 	 * Byte tag value
 	 */
-	char value;
+	int8_t value;
 
 	/*
 	 * Byte tag constructor
@@ -43,12 +44,12 @@ public:
 	/*
 	 * Byte tag constructor
 	 */
-	byte_tag(char value) : generic_tag(BYTE), value(value) { return; }
+	byte_tag(int8_t value) : generic_tag(BYTE), value(value) { return; }
 
 	/*
 	 * Byte tag constructor
 	 */
-	byte_tag(const std::string &name, char value) : generic_tag(name, BYTE), value(value) { return; }
+	byte_tag(const std::string &name, int8_t value) : generic_tag(name, BYTE), value(value) { return; }
 
 	/*
 	 * Byte tag destructor

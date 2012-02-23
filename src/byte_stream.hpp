@@ -20,6 +20,7 @@
 #ifndef BYTE_STREAM_HPP_
 #define BYTE_STREAM_HPP_
 
+#include <cstdint>
 #include <cstdlib>
 #include <string>
 #include <vector>
@@ -30,12 +31,12 @@ private:
 	/*
 	 * Stream buffer
 	 */
-	char *buff;
+	int8_t *buff;
 
 	/*
 	 * Stream buffer length/position
 	 */
-	size_t len, pos;
+	unsigned int len, pos;
 
 	/*
 	 * Swap endian
@@ -47,12 +48,12 @@ private:
 	 * (char, short, int, long)
 	 */
 	template<class T>
-	size_t read_stream(T &var) {
+	unsigned int read_stream(T &var) {
 
 		// assign type T from stream
-		size_t width = sizeof(T);
+		unsigned int width = sizeof(T);
 		char *data = new char[width];
-		for(size_t i = 0; i < width; i++) {
+		for(unsigned int i = 0; i < width; i++) {
 			if(available() == END_OF_STREAM)
 				return END_OF_STREAM;
 			data[i] = buff[pos++];
@@ -60,7 +61,7 @@ private:
 		if(swap)
 			swap_endian<char>(data, width);
 		var = 0;
-		for(size_t i = 0; i < width - 1; i++)
+		for(unsigned int i = 0; i < width - 1; i++)
 			var |= data[i] << 8 * ((width - 1) - i);
 		var |= data[width - 1];
 		delete[] data;
@@ -72,12 +73,12 @@ private:
 	 * (float, double)
 	 */
 	template<class T>
-	size_t read_stream_float(T &var) {
+	unsigned int read_stream_float(T &var) {
 
 		// assign type T from stream
-		size_t width = sizeof(T);
+		unsigned int width = sizeof(T);
 		char *data = new char[width];
-		for(size_t i = 0; i < width; i++) {
+		for(unsigned int i = 0; i < width; i++) {
 			if(available() == END_OF_STREAM)
 				return END_OF_STREAM;
 			data[i] = buff[pos++];
@@ -108,8 +109,8 @@ public:
 	/*
 	 * Status indicators
 	 */
-	static const size_t END_OF_STREAM = 0;
-	static const size_t SUCCESS = 1;
+	static const unsigned int END_OF_STREAM = 0;
+	static const unsigned int SUCCESS = 1;
 
 	/*
 	 * Swap flags
@@ -131,6 +132,11 @@ public:
 	 * Byte stream constructor
 	 */
 	byte_stream(const std::string &input);
+
+	/*
+	 * Byte stream constructor
+	 */
+	byte_stream(std::vector<int8_t> &input);
 
 	/*
 	 * Byte stream destructor
@@ -165,22 +171,22 @@ public:
 	/*
 	 * Byte stream output
 	 */
-	bool operator>>(char &output);
+	bool operator>>(int8_t &output);
 
 	/*
 	 * Byte stream output
 	 */
-	bool operator>>(short &output);
+	bool operator>>(int16_t &output);
 
 	/*
 	 * Byte stream output
 	 */
-	bool operator>>(int &output);
+	bool operator>>(int32_t &output);
 
 	/*
 	 * Byte stream output
 	 */
-	bool operator>>(long &output);
+	bool operator>>(int64_t &output);
 
 	/*
 	 * Byte stream output
@@ -195,7 +201,7 @@ public:
 	/*
 	 * Returns the available bytes left in the stream
 	 */
-	size_t available(void);
+	unsigned int available(void);
 
 	/*
 	 * Returns the status of the stream
@@ -210,12 +216,12 @@ public:
 	/*
 	 * Returns the current position of the stream
 	 */
-	size_t position(void) { return pos; }
+	unsigned int position(void) { return pos; }
 
 	/*
 	 * Returns the entire contents of the stream buffer
 	 */
-	char *rdbuf(void) { return buff; }
+	int8_t *rdbuf(void) { return buff; }
 
 	/*
 	 * Resets the streams position
@@ -225,7 +231,7 @@ public:
 	/*
 	 * Returns the streams total size
 	 */
-	size_t size(void) { return len; }
+	unsigned int size(void) { return len; }
 
 	/*
 	 * Returns a string representation of the stream

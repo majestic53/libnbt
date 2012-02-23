@@ -28,7 +28,7 @@ public:
 	/*
 	 * Short tag value
 	 */
-	short value;
+	int16_t value;
 
 	/*
 	 * Short tag constructor
@@ -43,12 +43,12 @@ public:
 	/*
 	 * Short tag constructor
 	 */
-	short_tag(short value) : generic_tag(SHORT), value(value) { return; }
+	short_tag(int16_t value) : generic_tag(SHORT), value(value) { return; }
 
 	/*
 	 * Short tag constructor
 	 */
-	short_tag(const std::string &name, short value) : generic_tag(name, SHORT), value(value) { return; }
+	short_tag(const std::string &name, int16_t value) : generic_tag(name, SHORT), value(value) { return; }
 
 	/*
 	 * Short tag destructor

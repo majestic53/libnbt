@@ -1,5 +1,5 @@
 /*
- * region_chunk.hpp
+ * region_chunk_info.cpp
  * Copyright (C) 2012 David Jolly
  * ----------------------
  *
@@ -18,12 +18,12 @@
  */
 
 #include <sstream>
-#include "region_chunk.hpp"
+#include "region_chunk_info.hpp"
 
 /*
- * Region chunk constructor
+ * Region chunk info constructor
  */
-region_chunk::region_chunk(void) {
+region_chunk_info::region_chunk_info(void) {
 	pos = 0;
 	size = 0;
 	modified = 0;
@@ -31,9 +31,9 @@ region_chunk::region_chunk(void) {
 }
 
 /*
- * Region chunk constructor
+ * Region chunk info constructor
  */
-region_chunk::region_chunk(const region_chunk &other) {
+region_chunk_info::region_chunk_info(const region_chunk_info &other) {
 	pos = other.pos;
 	size = other.size;
 	modified = other.modified;
@@ -41,9 +41,9 @@ region_chunk::region_chunk(const region_chunk &other) {
 }
 
 /*
- * Region chunk assignment
+ * Region chunk info assignment
  */
-region_chunk &region_chunk::operator=(const region_chunk &other) {
+region_chunk_info &region_chunk_info::operator=(const region_chunk_info &other) {
 
 	// check for self
 	if(this == &other)
@@ -58,9 +58,9 @@ region_chunk &region_chunk::operator=(const region_chunk &other) {
 }
 
 /*
- * Region chunk equals
+ * Region chunk info equals
  */
-bool region_chunk::operator==(const region_chunk &other) {
+bool region_chunk_info::operator==(const region_chunk_info &other) {
 
 	// check for self
 	if(this == &other)
@@ -74,9 +74,9 @@ bool region_chunk::operator==(const region_chunk &other) {
 }
 
 /*
- * Returns a string representation of a region chunk
+ * Returns a string representation of a region chunk info
  */
-std::string region_chunk::to_string(void) {
+std::string region_chunk_info::to_string(void) {
 	std::stringstream ss;
 
 	// form string representation
