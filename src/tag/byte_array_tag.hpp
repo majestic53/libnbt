@@ -20,7 +20,6 @@
 #ifndef BYTE_ARRAY_TAG_HPP_
 #define BYTE_ARRAY_TAG_HPP_
 
-#include <cstdint>
 #include <vector>
 #include "generic_tag.hpp"
 
@@ -30,7 +29,7 @@ public:
 	/*
 	 * Byte array tag value
 	 */
-	std::vector<int8_t> value;
+	std::vector<char> value;
 
 	/*
 	 * Byte array tag constructor
@@ -45,12 +44,12 @@ public:
 	/*
 	 * Byte array tag constructor
 	 */
-	byte_array_tag(std::vector<int8_t> value) : generic_tag(BYTE_ARRAY), value(value) { return; }
+	byte_array_tag(std::vector<char> value) : generic_tag(BYTE_ARRAY), value(value) { return; }
 
 	/*
 	 * Byte array tag constructor
 	 */
-	byte_array_tag(const std::string &name, std::vector<int8_t> &value) : generic_tag(name, BYTE_ARRAY), value(value) { return; }
+	byte_array_tag(const std::string &name, std::vector<char> &value) : generic_tag(name, BYTE_ARRAY), value(value) { return; }
 
 	/*
 	 * Byte array tag destructor
@@ -75,12 +74,12 @@ public:
 	/*
 	 * Add a byte to a byte array tag
 	 */
-	void add(int8_t byte) { value.push_back(byte); }
+	void add(char byte) { value.push_back(byte); }
 
 	/*
 	 * Returns a byte value at a given index in a byte array tag
 	 */
-	int8_t at(unsigned int index);
+	char at(unsigned int index);
 
 	/*
 	 * Returns the empty status of a byte array tag

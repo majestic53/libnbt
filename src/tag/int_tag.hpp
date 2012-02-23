@@ -20,7 +20,6 @@
 #ifndef INT_TAG_HPP_
 #define INT_TAG_HPP_
 
-#include <cstdint>
 #include "generic_tag.hpp"
 
 class int_tag : public generic_tag {
@@ -29,7 +28,7 @@ public:
 	/*
 	 * Int tag value
 	 */
-	int32_t value;
+	int value;
 
 	/*
 	 * Int tag constructor
@@ -44,12 +43,12 @@ public:
 	/*
 	 * Int tag constructor
 	 */
-	int_tag(int32_t value) : generic_tag(INT), value(value) { return; }
+	int_tag(int value) : generic_tag(INT), value(value) { return; }
 
 	/*
 	 * Int tag constructor
 	 */
-	int_tag(const std::string &name, int32_t value) : generic_tag(name, INT), value(value) { return; }
+	int_tag(const std::string &name, int value) : generic_tag(name, INT), value(value) { return; }
 
 	/*
 	 * Int tag destructor

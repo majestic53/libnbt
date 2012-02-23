@@ -36,7 +36,7 @@ byte_stream::byte_stream(void) {
 byte_stream::byte_stream(const byte_stream &other) {
 	len = other.len;
 	pos = other.pos;
-	buff = new int8_t[other.len];
+	buff = new char[other.len];
 	if(!buff) {
 		len = 0;
 		pos = 0;
@@ -53,7 +53,7 @@ byte_stream::byte_stream(const byte_stream &other) {
 byte_stream::byte_stream(const std::string &input) {
 	len = input.length();
 	pos = 0;
-	buff = new int8_t[input.length()];
+	buff = new char[input.length()];
 	if(!buff) {
 		len = 0;
 		pos = 0;
@@ -76,7 +76,7 @@ byte_stream &byte_stream::operator=(const byte_stream &other) {
 	// set attributes
 	len = other.len;
 	pos = other.pos;
-	buff = new int8_t[other.len];
+	buff = new char[other.len];
 	if(!buff) {
 		len = 0;
 		pos = 0;
@@ -113,7 +113,7 @@ bool byte_stream::operator==(const byte_stream &other) {
 bool byte_stream::operator<<(const std::string &input) {
 
 	// create new buffer
-	int8_t *n_buff = new int8_t[input.length()];
+	char *n_buff = new char[input.length()];
 	if(!n_buff)
 		return false;
 	for(unsigned int i = 0; i < input.length(); ++i)
@@ -131,7 +131,7 @@ bool byte_stream::operator<<(const std::string &input) {
 /*
  * Byte stream input (flag)
  */
-bool byte_stream::operator<<(int32_t flag) {
+bool byte_stream::operator<<(int flag) {
 
 	// set state flags
 	switch(flag) {
@@ -148,7 +148,7 @@ bool byte_stream::operator<<(int32_t flag) {
 /*
  * Byte stream output
  */
-bool byte_stream::operator>>(int8_t &output) {
+bool byte_stream::operator>>(char &output) {
 
 	// check if end of stream is reached
 	if(available() == END_OF_STREAM)
@@ -162,40 +162,40 @@ bool byte_stream::operator>>(int8_t &output) {
 /*
  * Byte stream output
  */
-bool byte_stream::operator>>(int16_t &output) {
+bool byte_stream::operator>>(short &output) {
 
 	// check if end of stream is reached
 	if(available() == END_OF_STREAM)
 		return END_OF_STREAM;
 
 	// read short from stream
-	return read_stream<int16_t>(output);
+	return read_stream<short>(output);
 }
 
 /*
  * Byte stream output
  */
-bool byte_stream::operator>>(int32_t &output) {
+bool byte_stream::operator>>(int &output) {
 
 	// check if end of stream is reached
 	if(available() == END_OF_STREAM)
 		return END_OF_STREAM;
 
 	// read short from stream
-	return read_stream<int32_t>(output);
+	return read_stream<int>(output);
 }
 
 /*
  * Byte stream output
  */
-bool byte_stream::operator>>(int64_t &output) {
+bool byte_stream::operator>>(long &output) {
 
 	// check if end of stream is reached
 	if(available() == END_OF_STREAM)
 		return END_OF_STREAM;
 
 	// read short from stream
-	return read_stream<int64_t>(output);
+	return read_stream<long>(output);
 }
 
 /*

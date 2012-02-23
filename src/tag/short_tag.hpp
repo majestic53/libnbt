@@ -20,7 +20,6 @@
 #ifndef SHORT_TAG_HPP_
 #define SHORT_TAG_HPP_
 
-#include <cstdint>
 #include "generic_tag.hpp"
 
 class short_tag : public generic_tag {
@@ -29,7 +28,7 @@ public:
 	/*
 	 * Short tag value
 	 */
-	int16_t value;
+	short value;
 
 	/*
 	 * Short tag constructor
@@ -44,12 +43,12 @@ public:
 	/*
 	 * Short tag constructor
 	 */
-	short_tag(int16_t value) : generic_tag(SHORT), value(value) { return; }
+	short_tag(short value) : generic_tag(SHORT), value(value) { return; }
 
 	/*
 	 * Short tag constructor
 	 */
-	short_tag(const std::string &name, int16_t value) : generic_tag(name, SHORT), value(value) { return; }
+	short_tag(const std::string &name, short value) : generic_tag(name, SHORT), value(value) { return; }
 
 	/*
 	 * Short tag destructor

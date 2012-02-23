@@ -57,7 +57,7 @@ public:
 	/*
 	 * Region file exception constructor
 	 */
-	region_file_exc(unsigned int exc, const std::string message) : exc(exc), message(message) { return; };
+	region_file_exc(unsigned int exc, const std::string &message) : exc(exc), message(message) { return; };
 
 	/*
 	 * Region file exception destructor

@@ -20,7 +20,6 @@
 #ifndef BYTE_STREAM_HPP_
 #define BYTE_STREAM_HPP_
 
-#include <cstdint>
 #include <cstdlib>
 #include <string>
 #include <vector>
@@ -31,7 +30,7 @@ private:
 	/*
 	 * Stream buffer
 	 */
-	int8_t *buff;
+	char *buff;
 
 	/*
 	 * Stream buffer length/position
@@ -52,14 +51,14 @@ private:
 
 		// assign type T from stream
 		size_t width = sizeof(T);
-		int8_t *data = new int8_t[width];
+		char *data = new char[width];
 		for(size_t i = 0; i < width; i++) {
 			if(available() == END_OF_STREAM)
 				return END_OF_STREAM;
 			data[i] = buff[pos++];
 		}
 		if(swap)
-			swap_endian<int8_t>(data, width);
+			swap_endian<char>(data, width);
 		var = 0;
 		for(size_t i = 0; i < width - 1; i++)
 			var |= data[i] << 8 * ((width - 1) - i);
@@ -77,14 +76,14 @@ private:
 
 		// assign type T from stream
 		size_t width = sizeof(T);
-		int8_t *data = new int8_t[width];
+		char *data = new char[width];
 		for(size_t i = 0; i < width; i++) {
 			if(available() == END_OF_STREAM)
 				return END_OF_STREAM;
 			data[i] = buff[pos++];
 		}
 		if(swap)
-			swap_endian<int8_t>(data, width);
+			swap_endian<char>(data, width);
 		var = atof((char *) data);
 		delete[] data;
 		return SUCCESS;
@@ -115,8 +114,8 @@ public:
 	/*
 	 * Swap flags
 	 */
-	static const int32_t NO_SWAP_ENDIAN = 0x0;
-	static const int32_t SWAP_ENDIAN = 0x1;
+	static const int NO_SWAP_ENDIAN = 0x0;
+	static const int SWAP_ENDIAN = 0x1;
 
 	/*
 	 * Byte stream constructor
@@ -161,27 +160,27 @@ public:
 	/*
 	 * Byte stream input (flag)
 	 */
-	bool operator<<(int32_t flag);
+	bool operator<<(int flag);
 
 	/*
 	 * Byte stream output
 	 */
-	bool operator>>(int8_t &output);
+	bool operator>>(char &output);
 
 	/*
 	 * Byte stream output
 	 */
-	bool operator>>(int16_t &output);
+	bool operator>>(short &output);
 
 	/*
 	 * Byte stream output
 	 */
-	bool operator>>(int32_t &output);
+	bool operator>>(int &output);
 
 	/*
 	 * Byte stream output
 	 */
-	bool operator>>(int64_t &output);
+	bool operator>>(long &output);
 
 	/*
 	 * Byte stream output
@@ -216,7 +215,7 @@ public:
 	/*
 	 * Returns the entire contents of the stream buffer
 	 */
-	int8_t *rdbuf(void) { return buff; }
+	char *rdbuf(void) { return buff; }
 
 	/*
 	 * Resets the streams position

@@ -20,7 +20,6 @@
 #ifndef LIST_TAG_HPP_
 #define LIST_TAG_HPP_
 
-#include <cstdint>
 #include <vector>
 #include "generic_tag.hpp"
 

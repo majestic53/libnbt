@@ -23,6 +23,7 @@
 #include <boost/regex.hpp>
 #include <fstream>
 #include <string>
+#include <vector>
 #include "byte_stream.hpp"
 #include "region_chunk.hpp"
 #include "region_file_exc.hpp"
@@ -71,6 +72,11 @@ private:
 	 * Region file coord
 	 */
 	int x, z;
+
+	/*
+	 * ZLib inflation routine
+	 */
+	int inflate_zlib(std::vector<char> &in, std::vector<char> &out);
 
 public:
 
@@ -141,6 +147,11 @@ public:
 		// reverse character array
 		std::reverse(endian, endian + sizeof(T));
 	}
+
+	/*
+	 * Returnd region chunk data at a given x, z coord
+	 */
+	int get_chunk_data(unsigned int x, unsigned int z, std::vector<char> &data);
 
 	/*
 	 * Returns region chunk information at a given x, z coord
