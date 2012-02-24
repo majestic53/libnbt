@@ -43,9 +43,9 @@ public:
 	 * Supported exception codes
 	 */
 	enum EXC_CODE { UNDEFINED, ALLOC_FAIL, INVALID_PATH, OUT_OF_BOUNDS, UNSUPPORTED_COMPRESSION,
-					UNKNOWN_COMPRESSION, UNKNOWN_TAG_TYPE, STREAM_READ_ERROR };
+					UNKNOWN_COMPRESSION, UNKNOWN_TAG_TYPE, STREAM_READ_ERROR, UNFILLED_CHUNK };
 	static const std::string MESSAGE[];
-	static const unsigned int MESSAGE_COUNT = 8;
+	static const unsigned int MESSAGE_COUNT = 9;
 
 	/*
 	 * Region file exception constructor

@@ -123,12 +123,20 @@ bool region_file::operator==(const region_file &other) {
  * Returnd region chunk data at a given x, z coord
  */
 void region_file::get_chunk_data(unsigned int x, unsigned int z, std::vector<int8_t> &data) {
+	unsigned int pos = x + z * REGION_SIZE;
 
 	// check if x, z coord are out-of-bounds
-	if(x + z * REGION_SIZE >= CHUNK_COUNT) {
+	if(pos >= CHUNK_COUNT) {
 		unsigned int coord[] = {x, z};
 		std::vector<unsigned int> coord_vec(coord, coord + 2);
 		throw region_file_exc(region_file_exc::OUT_OF_BOUNDS, coord_vec);
+	}
+
+	// check if x, z coord is filled
+	if(!region_chunk_info(this->info[pos]).get_position()) {
+		unsigned int coord[] = {x, z};
+		std::vector<unsigned int> coord_vec(coord, coord + 2);
+		throw region_file_exc(region_file_exc::UNFILLED_CHUNK, coord_vec);
 	}
 
 	// gather chunk info
@@ -192,13 +200,6 @@ void region_file::get_chunk_info(unsigned int x, unsigned int z, region_chunk_in
  * Returns chunk data tag at a given x, z coord
  */
 void region_file::get_chunk_tag(unsigned int x, unsigned int z, region_chunk_tag &tag) {
-
-	// check if x, z coord are out-of-bounds
-	if(x + z * REGION_SIZE >= CHUNK_COUNT) {
-		unsigned int coord[] = {x, z};
-		std::vector<unsigned int> coord_vec(coord, coord + 2);
-		throw region_file_exc(region_file_exc::OUT_OF_BOUNDS, coord_vec);
-	}
 
 	// collect chunk data
 	int8_t type;

@@ -31,6 +31,7 @@ const std::string region_file_exc::MESSAGE[MESSAGE_COUNT] = {
 		"Unknown compression",
 		"Unknown tag type",
 		"Stream read error",
+		"Attempt to read unfilled chunk"
 };
 
 /*
