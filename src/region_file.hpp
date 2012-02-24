@@ -85,9 +85,56 @@ private:
 	generic_tag *read_tag(const std::string &name, unsigned int type, byte_stream &stream);
 
 	/*
-	 * Reads a tag value from stream
+	 * Reads an array tag value from stream
 	 */
-	void *read_value(unsigned int type, byte_stream &stream);
+	template <class T>
+	bool read_array_value(byte_stream &stream, std::vector<T> &value) {
+		int32_t len;
+		T byte_ele;
+
+		// check stream status
+		if(!stream.good())
+			return false;
+
+		// retrieve value
+		stream >> len;
+		len = abs(len);
+		for(int i = 0; i < len; i++) {
+			stream >> byte_ele;
+			value.push_back(byte_ele);
+		}
+		return true;
+	}
+
+	/*
+	 * Reads a compound tag value from stream
+	 */
+	bool read_compound_value(byte_stream &stream, std::vector<generic_tag *> &value);
+
+	/*
+	 * Reads a list tag value from stream
+	 */
+	bool read_list_value(byte_stream &stream, std::vector<generic_tag *> &value);
+
+	/*
+	 * Reads a number tag value from stream
+	 */
+	template <class T>
+	bool read_number_value(byte_stream &stream, T &value) {
+
+		// check stream status
+		if(!stream.good())
+			return false;
+
+		// retrieve value
+		stream >> value;
+		return true;
+	}
+
+	/*
+	 * Reads a string tag value from stream
+	 */
+	bool read_string_value(byte_stream &stream, std::string &value);
 
 public:
 
@@ -172,7 +219,7 @@ public:
 	/*
 	 * Returns chunk data tag at a given x, z coord
 	 */
-	void get_chunk_tag(unsigned int x, unsigned int z, generic_tag *tag);
+	void get_chunk_tag(unsigned int x, unsigned int z, generic_tag *&tag);
 
 	/*
 	 * Returns total region chunks filled within a region file

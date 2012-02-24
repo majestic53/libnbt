@@ -17,9 +17,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
-
-
 #include <sstream>
 #include <zlib.h>
 #include "region_file.hpp"
@@ -191,7 +188,7 @@ bool region_file::get_chunk_info(unsigned int x, unsigned int z, region_chunk_in
 /*
  * Returns chunk data tag at a given x, z coord
  */
-void region_file::get_chunk_tag(unsigned int x, unsigned int z, generic_tag *tag) {
+void region_file::get_chunk_tag(unsigned int x, unsigned int z, generic_tag *&tag) {
 
 	// Check to see if (x, z) are out-of-bounds
 	if(x + z * REGION_SIZE >= CHUNK_COUNT)
@@ -222,10 +219,6 @@ void region_file::get_chunk_tag(unsigned int x, unsigned int z, generic_tag *tag
 			name += ch;
 		}
 		tag = read_tag(name, type, stream);
-
-		// TODO: create an object to manage tags
-
-		// TODO: add a function to retrieve a subtag by name
 	}
 }
 
@@ -334,41 +327,60 @@ generic_tag *region_file::read_tag(const std::string &name, unsigned int type, b
 
 	// create tag
 	generic_tag *tag = NULL;
+	int8_t b_val;
+	int16_t s_val;
+	int32_t i_val;
+	int64_t l_val;
+	float f_val;
+	double d_val;
+	std::string str_val;
+	std::vector<int8_t> b_vec;
+	std::vector<generic_tag *> gen_vec;
 
 	// assign tag based off type
 	switch(type) {
 		case generic_tag::BYTE:
-			tag = new byte_tag(name, *((int8_t *) read_value(type, stream)));
+			read_number_value<int8_t>(stream, b_val);
+			tag = new byte_tag(name, b_val);
 			break;
 		case generic_tag::BYTE_ARRAY:
-			tag = new byte_array_tag(name, *((std::vector<int8_t> *) read_value(type, stream)));
+			read_array_value<int8_t>(stream, b_vec);
+			tag = new byte_array_tag(name, b_vec);
 			break;
 		case generic_tag::COMPOUND:
-			tag = new compound_tag(name, *((std::vector<generic_tag *> *) read_value(type, stream)));
+			read_compound_value(stream, gen_vec);
+			tag = new compound_tag(name, gen_vec);
 			break;
 		case generic_tag::DOUBLE:
-			tag = new double_tag(name, *((double *) read_value(type, stream)));
+			read_number_value<double>(stream, d_val);
+			tag = new double_tag(name, d_val);
 			break;
 		case generic_tag::END:
 			tag = new end_tag;
 			break;
 		case generic_tag::FLOAT:
-			tag = new float_tag(name, *((float *) read_value(type, stream)));
+			read_number_value<float>(stream, f_val);
+			tag = new float_tag(name, f_val);
 			break;
 		case generic_tag::INT:
-			tag = new int_tag(name, *((int32_t *) read_value(type, stream)));
+			read_number_value<int32_t>(stream, i_val);
+			tag = new int_tag(name, i_val);
 			break;
 		case generic_tag::LIST:
-			tag = new list_tag(name, *((std::vector<generic_tag *> *) read_value(type, stream)));
+			read_list_value(stream, gen_vec);
+			tag = new list_tag(name, gen_vec);
 			break;
 		case generic_tag::LONG:
-			tag = new long_tag(name, *((int64_t *) read_value(type, stream)));
+			read_number_value<int64_t>(stream, l_val);
+			tag = new long_tag(name, l_val);
 			break;
 		case generic_tag::SHORT:
-			tag = new short_tag(name, *((int16_t *) read_value(type, stream)));
+			read_number_value<int16_t>(stream, s_val);
+			tag = new short_tag(name, s_val);
 			break;
 		case generic_tag::STRING:
-			tag = new string_tag(name, *((std::string *) read_value(type, stream)));
+			read_string_value(stream, str_val);
+			tag = new string_tag(name, str_val);
 			break;
 		default:
 			throw region_file_exc(region_file_exc::UNKNOWN_TAG_TYPE);
@@ -377,87 +389,71 @@ generic_tag *region_file::read_tag(const std::string &name, unsigned int type, b
 }
 
 /*
- * Reads a tag value from stream
+ * Reads a compound tag value from stream
  */
-void *region_file::read_value(unsigned int type, byte_stream &stream) {
-	int32_t len;
-	int16_t str_len = 0, name_len = 0;
-	int8_t ch, byte_ele = 0, ele_type = 0;
-
-	// create value
-	void *value = NULL;
+bool region_file::read_compound_value(byte_stream &stream, std::vector<generic_tag *> &value) {
+	int16_t name_len;
+	int8_t ch, ele_type;
 	std::string name;
-	name.clear();
 
-	// assign value based off type
-	switch(type) {
-		case generic_tag::BYTE:
-			value = new int8_t;
-			stream >> *((int8_t *) value);
-			break;
-		case generic_tag::BYTE_ARRAY:
-			stream >> len;
-			len = abs(len);
-			value = new std::vector<int8_t>;
-			for(int i = 0; i < len; i++) {
-				stream >> byte_ele;
-				((std::vector<int8_t> *) value)->push_back(byte_ele);
-			}
-		break;
-		case generic_tag::COMPOUND:
-			value = new std::vector<generic_tag *>;
-			do {
-				stream >> ele_type;
-				if(ele_type != generic_tag::END) {
-					stream >> name_len;
-					name.clear();
-					for(int i = 0; i < name_len; i++) {
-						stream >> ch;
-						name += ch;
-					}
-					((std::vector<generic_tag *> *) value)->push_back(read_tag(name, ele_type, stream));
-				}
-			} while(ele_type != generic_tag::END);
-			break;
-		case generic_tag::DOUBLE:
-			value = new double;
-			stream >> *((double *) value);
-			break;
-		case generic_tag::FLOAT:
-			value = new float;
-			stream >> *((float *) value);
-			break;
-		case generic_tag::INT:
-			value = new int32_t;
-			stream >> *((int32_t *) value);
-			break;
-		case generic_tag::LIST:
-			stream >> ele_type;
-			stream >> len;
-			len = abs(len);
-			value = new std::vector<generic_tag *>;
-			for(int i = 0; i < len; i++) {
-				((std::vector<generic_tag *> *) value)->push_back(read_tag("", ele_type, stream));
-			}
-			break;
-		case generic_tag::LONG:
-			value = new int64_t;
-			stream >> *((int64_t *) value);
-			break;
-		case generic_tag::SHORT:
-			value = new int16_t;
-			stream >> *((int16_t *) value);
-			break;
-		case generic_tag::STRING:
-			stream >> str_len;
-			value = new std::string;
-			for(int i = 0; i < str_len; i++) {
+	// check stream status
+	if(!stream.good())
+		return false;
+
+	// retrieve compound value
+	do {
+		stream >> ele_type;
+		if(ele_type != generic_tag::END) {
+			stream >> name_len;
+			name.clear();
+			for(int i = 0; i < name_len; i++) {
 				stream >> ch;
-				*((std::string *) value) += ch;
+				name += ch;
 			}
-			break;
+			value.push_back(read_tag(name, ele_type, stream));
+		}
+	} while(ele_type != generic_tag::END);
+	return true;
+}
+
+/*
+ * Reads a list tag value from stream
+ */
+bool region_file::read_list_value(byte_stream &stream, std::vector<generic_tag *> &value) {
+	int32_t len;
+	int8_t ele_type;
+
+	// check stream status
+	if(!stream.good())
+		return false;
+
+	// retrieve list value
+	stream >> ele_type;
+	stream >> len;
+	len = abs(len);
+	for(int i = 0; i < len; i++)
+		value.push_back(read_tag("", ele_type, stream));
+	return true;
+}
+
+/*
+ * Reads a string tag value from stream
+ */
+bool region_file::read_string_value(byte_stream &stream, std::string &value) {
+	int8_t ch;
+	int16_t str_len;
+
+	// check stream status
+	if(!stream.good())
+		return false;
+
+	// retrieve string value
+	stream >> str_len;
+	for(int i = 0; i < str_len; i++) {
+		stream >> ch;
+		value += ch;
 	}
-	return value;
+	return true;
 }
 
 /*
