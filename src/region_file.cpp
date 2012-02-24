@@ -122,11 +122,14 @@ bool region_file::operator==(const region_file &other) {
 /*
  * Returnd region chunk data at a given x, z coord
  */
-int region_file::get_chunk_data(unsigned int x, unsigned int z, std::vector<int8_t> &data) {
+void region_file::get_chunk_data(unsigned int x, unsigned int z, std::vector<int8_t> &data) {
 
-	// Check to see if (x, z) are out-of-bounds
-	if(x + z * REGION_SIZE >= CHUNK_COUNT)
-		throw region_file_exc(region_file_exc::OUT_OF_BOUNDS);
+	// check if x, z coord are out-of-bounds
+	if(x + z * REGION_SIZE >= CHUNK_COUNT) {
+		unsigned int coord[] = {x, z};
+		std::vector<unsigned int> coord_vec(coord, coord + 2);
+		throw region_file_exc(region_file_exc::OUT_OF_BOUNDS, coord_vec);
+	}
 
 	// gather chunk info
 	region_chunk_info chunk_info = info[x + z * REGION_SIZE];
@@ -135,7 +138,7 @@ int region_file::get_chunk_data(unsigned int x, unsigned int z, std::vector<int8
 	// check if chunk is empty
 	if(chunk_info.get_position() == 0) {
 		data.clear();
-		return 0;
+		return;
 	}
 
 	// open region file
@@ -157,42 +160,45 @@ int region_file::get_chunk_data(unsigned int x, unsigned int z, std::vector<int8
 	chunk_file.close();
 
 	// decompress data
-	int size = 0;
 	switch(chunk_info.get_type()) {
-		case region_chunk_info::GZIP: throw region_file_exc(region_file_exc::UNSUPPORTED_COMPRESSION);
+		case region_chunk_info::GZIP:
+			throw region_file_exc(region_file_exc::UNSUPPORTED_COMPRESSION, chunk_info.get_type());
 			break;
-		case region_chunk_info::ZLIB: size = inflate_zlib(comp_vec, data);
+		case region_chunk_info::ZLIB:
+			inflate_zlib(comp_vec, data);
 			break;
-		default: throw region_file_exc(region_file_exc::UNKNOWN_COMPRESSION);
+		default: throw region_file_exc(region_file_exc::UNKNOWN_COMPRESSION, chunk_info.get_type());
 			break;
 	}
-
-	// return size of decompressed data
-	return size;
 }
 
 /*
  * Returns region chunk information at a given x, z coord
  */
-bool region_file::get_chunk_info(unsigned int x, unsigned int z, region_chunk_info &info) {
+void region_file::get_chunk_info(unsigned int x, unsigned int z, region_chunk_info &info) {
 
-	// check if coord are out-of-bounds
-	if(x + z * REGION_SIZE >= CHUNK_COUNT)
-		return false;
+	// check if x, z coord are out-of-bounds
+	if(x + z * REGION_SIZE >= CHUNK_COUNT) {
+		unsigned int coord[] = {x, z};
+		std::vector<unsigned int> coord_vec(coord, coord + 2);
+		throw region_file_exc(region_file_exc::OUT_OF_BOUNDS, coord_vec);
+	}
 
 	// assign chunk info
 	info = region_chunk_info(this->info[x + z * REGION_SIZE]);
-	return true;
 }
 
 /*
  * Returns chunk data tag at a given x, z coord
  */
-void region_file::get_chunk_tag(unsigned int x, unsigned int z, generic_tag *&tag) {
+void region_file::get_chunk_tag(unsigned int x, unsigned int z, region_chunk_tag &tag) {
 
-	// Check to see if (x, z) are out-of-bounds
-	if(x + z * REGION_SIZE >= CHUNK_COUNT)
-		throw region_file_exc(region_file_exc::OUT_OF_BOUNDS);
+	// check if x, z coord are out-of-bounds
+	if(x + z * REGION_SIZE >= CHUNK_COUNT) {
+		unsigned int coord[] = {x, z};
+		std::vector<unsigned int> coord_vec(coord, coord + 2);
+		throw region_file_exc(region_file_exc::OUT_OF_BOUNDS, coord_vec);
+	}
 
 	// collect chunk data
 	int8_t type;
@@ -206,9 +212,11 @@ void region_file::get_chunk_tag(unsigned int x, unsigned int z, generic_tag *&ta
 	// parse data for tags
 	stream >> type;
 
-	delete tag;
+	// cleanup and assign new tag
+	region_chunk_tag::cleanup(tag.get_root_tag());
+	tag.get_root_tag() = NULL;
 	if(type == generic_tag::END)
-		tag = new end_tag;
+		tag.get_root_tag() = new end_tag;
 	else {
 		int8_t ch;
 		int16_t name_len;
@@ -218,14 +226,14 @@ void region_file::get_chunk_tag(unsigned int x, unsigned int z, generic_tag *&ta
 			stream >> ch;
 			name += ch;
 		}
-		tag = read_tag(name, type, stream);
+		tag.get_root_tag() = read_tag(name, type, stream);
 	}
 }
 
 /*
  * ZLib inflation routine
  */
-int region_file::inflate_zlib(std::vector<int8_t> &in, std::vector<int8_t> &out) {
+void region_file::inflate_zlib(std::vector<int8_t> &in, std::vector<int8_t> &out) {
 	z_stream str;
 	int ret, pos = 0;
 
@@ -260,9 +268,6 @@ int region_file::inflate_zlib(std::vector<int8_t> &in, std::vector<int8_t> &out)
 
 	// end inflation
 	inflateEnd(&str);
-
-	// return length of inflation & array of characters
-	return out.size();
 }
 
 /*
@@ -383,7 +388,7 @@ generic_tag *region_file::read_tag(const std::string &name, unsigned int type, b
 			tag = new string_tag(name, str_val);
 			break;
 		default:
-			throw region_file_exc(region_file_exc::UNKNOWN_TAG_TYPE);
+			throw region_file_exc(region_file_exc::UNKNOWN_TAG_TYPE, type);
 	}
 	return tag;
 }
@@ -391,14 +396,14 @@ generic_tag *region_file::read_tag(const std::string &name, unsigned int type, b
 /*
  * Reads a compound tag value from stream
  */
-bool region_file::read_compound_value(byte_stream &stream, std::vector<generic_tag *> &value) {
+void region_file::read_compound_value(byte_stream &stream, std::vector<generic_tag *> &value) {
 	int16_t name_len;
 	int8_t ch, ele_type;
 	std::string name;
 
 	// check stream status
 	if(!stream.good())
-		return false;
+		throw region_file_exc(region_file_exc::STREAM_READ_ERROR, stream.position());
 
 	// retrieve compound value
 	do {
@@ -413,19 +418,18 @@ bool region_file::read_compound_value(byte_stream &stream, std::vector<generic_t
 			value.push_back(read_tag(name, ele_type, stream));
 		}
 	} while(ele_type != generic_tag::END);
-	return true;
 }
 
 /*
  * Reads a list tag value from stream
  */
-bool region_file::read_list_value(byte_stream &stream, std::vector<generic_tag *> &value) {
+void region_file::read_list_value(byte_stream &stream, std::vector<generic_tag *> &value) {
 	int32_t len;
 	int8_t ele_type;
 
 	// check stream status
 	if(!stream.good())
-		return false;
+		throw region_file_exc(region_file_exc::STREAM_READ_ERROR, stream.position());
 
 	// retrieve list value
 	stream >> ele_type;
@@ -433,19 +437,18 @@ bool region_file::read_list_value(byte_stream &stream, std::vector<generic_tag *
 	len = abs(len);
 	for(int i = 0; i < len; i++)
 		value.push_back(read_tag("", ele_type, stream));
-	return true;
 }
 
 /*
  * Reads a string tag value from stream
  */
-bool region_file::read_string_value(byte_stream &stream, std::string &value) {
+void region_file::read_string_value(byte_stream &stream, std::string &value) {
 	int8_t ch;
 	int16_t str_len;
 
 	// check stream status
 	if(!stream.good())
-		return false;
+		throw region_file_exc(region_file_exc::STREAM_READ_ERROR, stream.position());
 
 	// retrieve string value
 	stream >> str_len;
@@ -453,7 +456,6 @@ bool region_file::read_string_value(byte_stream &stream, std::string &value) {
 		stream >> ch;
 		value += ch;
 	}
-	return true;
 }
 
 /*

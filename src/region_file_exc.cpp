@@ -17,7 +17,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <sstream>
 #include "region_file_exc.hpp"
 
 /*
@@ -31,6 +30,7 @@ const std::string region_file_exc::MESSAGE[MESSAGE_COUNT] = {
 		"Unsupported compression",
 		"Unknown compression",
 		"Unknown tag type",
+		"Stream read error",
 };
 
 /*

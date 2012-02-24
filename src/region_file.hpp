@@ -27,6 +27,7 @@
 #include <vector>
 #include "byte_stream.hpp"
 #include "region_chunk_info.hpp"
+#include "region_chunk_tag.hpp"
 #include "region_file_exc.hpp"
 #include "tag/byte_array_tag.hpp"
 #include "tag/byte_tag.hpp"
@@ -75,9 +76,14 @@ private:
 	int x, z;
 
 	/*
+	 * Returnd region chunk data at a given x, z coord
+	 */
+	void get_chunk_data(unsigned int x, unsigned int z, std::vector<int8_t> &data);
+
+	/*
 	 * ZLib inflation routine
 	 */
-	int inflate_zlib(std::vector<int8_t> &in, std::vector<int8_t> &out);
+	void inflate_zlib(std::vector<int8_t> &in, std::vector<int8_t> &out);
 
 	/*
 	 * Creates a tag from stream
@@ -88,13 +94,13 @@ private:
 	 * Reads an array tag value from stream
 	 */
 	template <class T>
-	bool read_array_value(byte_stream &stream, std::vector<T> &value) {
+	void read_array_value(byte_stream &stream, std::vector<T> &value) {
 		int32_t len;
 		T byte_ele;
 
 		// check stream status
 		if(!stream.good())
-			return false;
+			throw region_file_exc(region_file_exc::STREAM_READ_ERROR, stream.position());
 
 		// retrieve value
 		stream >> len;
@@ -103,38 +109,36 @@ private:
 			stream >> byte_ele;
 			value.push_back(byte_ele);
 		}
-		return true;
 	}
 
 	/*
 	 * Reads a compound tag value from stream
 	 */
-	bool read_compound_value(byte_stream &stream, std::vector<generic_tag *> &value);
+	void read_compound_value(byte_stream &stream, std::vector<generic_tag *> &value);
 
 	/*
 	 * Reads a list tag value from stream
 	 */
-	bool read_list_value(byte_stream &stream, std::vector<generic_tag *> &value);
+	void read_list_value(byte_stream &stream, std::vector<generic_tag *> &value);
 
 	/*
 	 * Reads a number tag value from stream
 	 */
 	template <class T>
-	bool read_number_value(byte_stream &stream, T &value) {
+	void read_number_value(byte_stream &stream, T &value) {
 
 		// check stream status
 		if(!stream.good())
-			return false;
+			throw region_file_exc(region_file_exc::STREAM_READ_ERROR, stream.position());
 
 		// retrieve value
 		stream >> value;
-		return true;
 	}
 
 	/*
 	 * Reads a string tag value from stream
 	 */
-	bool read_string_value(byte_stream &stream, std::string &value);
+	void read_string_value(byte_stream &stream, std::string &value);
 
 public:
 
@@ -207,19 +211,14 @@ public:
 	}
 
 	/*
-	 * Returnd region chunk data at a given x, z coord
-	 */
-	int get_chunk_data(unsigned int x, unsigned int z, std::vector<int8_t> &data);
-
-	/*
 	 * Returns region chunk information at a given x, z coord
 	 */
-	bool get_chunk_info(unsigned int x, unsigned int z, region_chunk_info &info);
+	void get_chunk_info(unsigned int x, unsigned int z, region_chunk_info &info);
 
 	/*
 	 * Returns chunk data tag at a given x, z coord
 	 */
-	void get_chunk_tag(unsigned int x, unsigned int z, generic_tag *&tag);
+	void get_chunk_tag(unsigned int x, unsigned int z, region_chunk_tag &tag);
 
 	/*
 	 * Returns total region chunks filled within a region file

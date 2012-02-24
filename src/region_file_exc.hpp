@@ -20,7 +20,9 @@
 #ifndef REGION_FILE_EXC_HPP_
 #define REGION_FILE_EXC_HPP_
 
+#include <sstream>
 #include <string>
+#include <vector>
 
 class region_file_exc {
 private:
@@ -40,9 +42,10 @@ public:
 	/*
 	 * Supported exception codes
 	 */
-	enum EXC_CODE { UNDEFINED, ALLOC_FAIL, INVALID_PATH, OUT_OF_BOUNDS, UNSUPPORTED_COMPRESSION, UNKNOWN_COMPRESSION, UNKNOWN_TAG_TYPE };
+	enum EXC_CODE { UNDEFINED, ALLOC_FAIL, INVALID_PATH, OUT_OF_BOUNDS, UNSUPPORTED_COMPRESSION,
+					UNKNOWN_COMPRESSION, UNKNOWN_TAG_TYPE, STREAM_READ_ERROR };
 	static const std::string MESSAGE[];
-	static const unsigned int MESSAGE_COUNT = 7;
+	static const unsigned int MESSAGE_COUNT = 8;
 
 	/*
 	 * Region file exception constructor
@@ -55,9 +58,26 @@ public:
 	region_file_exc(unsigned int exc) : exc(exc) { return; };
 
 	/*
-	 * Region file exception constructor
+	 * Region file exeception constructor
 	 */
-	region_file_exc(unsigned int exc, const std::string &message) : exc(exc), message(message) { return; };
+	template <class T>
+	region_file_exc(unsigned int exc, const T &message) : exc(exc) {
+		std::stringstream ss;
+		ss << message;
+		this->message = ss.str();
+	}
+
+	/*
+	 * Region file exeception constructor
+	 */
+	template <class T>
+	region_file_exc(unsigned int exc, std::vector<T> &message) : exc(exc) {
+		std::stringstream ss;
+		for(unsigned int i = 0; i < message.size() - 1; ++i)
+			ss << message.at(i) << ", ";
+		ss << message.at(message.size() - 1);
+		this->message = ss.str();
+	}
 
 	/*
 	 * Region file exception destructor

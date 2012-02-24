@@ -20,18 +20,9 @@
 #ifndef REGION_CHUNK_TAG_HPP_
 #define REGION_CHUNK_TAG_HPP_
 
-#include "tag/byte_array_tag.hpp"
-#include "tag/byte_tag.hpp"
 #include "tag/compound_tag.hpp"
-#include "tag/double_tag.hpp"
-#include "tag/end_tag.hpp"
-#include "tag/float_tag.hpp"
 #include "tag/generic_tag.hpp"
-#include "tag/int_tag.hpp"
 #include "tag/list_tag.hpp"
-#include "tag/long_tag.hpp"
-#include "tag/short_tag.hpp"
-#include "tag/string_tag.hpp"
 
 class region_chunk_tag {
 private:
@@ -40,11 +31,6 @@ private:
 	 * Root region chunk tag
 	 */
 	generic_tag *root;
-
-	/*
-	 * Cleanup a series of tags
-	 */
-	static void cleanup(generic_tag *tag);
 
 public:
 
@@ -77,6 +63,11 @@ public:
 	 * Region chunk tag not equals
 	 */
 	bool operator!=(const region_chunk_tag &other) { return !(*this == other); }
+
+	/*
+	 * Cleanup a series of tags
+	 */
+	static void cleanup(generic_tag *tag);
 
 	/*
 	 * Region chunk tag empty status

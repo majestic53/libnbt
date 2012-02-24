@@ -54,6 +54,9 @@ void region_chunk_tag::cleanup(generic_tag *tag) {
 	compound_tag *cmp_tag = NULL;
 	list_tag *lst_tag = NULL;
 
+	if(!tag)
+		return;
+
 	// cleanup each tag based off its type
 	switch(tag->get_type()) {
 		case generic_tag::COMPOUND:
