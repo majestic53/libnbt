@@ -105,7 +105,7 @@ private:
 		// retrieve value
 		stream >> len;
 		len = abs(len);
-		for(int i = 0; i < len; i++) {
+		for(int i = 0; i < len; ++i) {
 			stream >> byte_ele;
 			value.push_back(byte_ele);
 		}

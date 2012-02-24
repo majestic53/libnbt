@@ -286,7 +286,7 @@ void region_file::read(const std::string &path) {
 		throw region_file_exc(region_file_exc::INVALID_PATH, path);
 
 	// read in chunk positions & convert to little-endian
-	for(unsigned int i = 0; i < CHUNK_COUNT; i++) {
+	for(unsigned int i = 0; i < CHUNK_COUNT; ++i) {
 		file.read(reinterpret_cast<char *>(&pos[i]), sizeof(int));
 		convert_endian(pos[i]);
 
@@ -296,7 +296,7 @@ void region_file::read(const std::string &path) {
 	}
 
 	// read in chunk timestamps & covert to little-endian
-	for(unsigned int i = 0; i < CHUNK_COUNT; i++) {
+	for(unsigned int i = 0; i < CHUNK_COUNT; ++i) {
 		file.read(reinterpret_cast<char *>(&time[i]), sizeof(int));
 		convert_endian(time[i]);
 	}
