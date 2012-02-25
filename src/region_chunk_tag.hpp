@@ -20,9 +20,18 @@
 #ifndef REGION_CHUNK_TAG_HPP_
 #define REGION_CHUNK_TAG_HPP_
 
+#include "tag/byte_array_tag.hpp"
+#include "tag/byte_tag.hpp"
 #include "tag/compound_tag.hpp"
+#include "tag/double_tag.hpp"
+#include "tag/end_tag.hpp"
+#include "tag/float_tag.hpp"
 #include "tag/generic_tag.hpp"
+#include "tag/int_tag.hpp"
 #include "tag/list_tag.hpp"
+#include "tag/long_tag.hpp"
+#include "tag/short_tag.hpp"
+#include "tag/string_tag.hpp"
 
 class region_chunk_tag {
 private:
@@ -35,7 +44,7 @@ private:
 	/*
 	 * Get tag by name helper
 	 */
-	void get_tag_by_name_helper(const std::string name, generic_tag *root, generic_tag *&tag);
+	generic_tag *get_tag_by_name_helper(const std::string name, generic_tag *root);
 
 public:
 
@@ -75,6 +84,11 @@ public:
 	static void cleanup(generic_tag *tag);
 
 	/*
+	 * Copies the contents of a root tag into another
+	 */
+	static bool copy(generic_tag *root, generic_tag *&tag);
+
+	/*
 	 * Region chunk tag empty status
 	 */
 	bool empty(void) { return !root; }
@@ -87,12 +101,7 @@ public:
 	/*
 	 * Return a region chunk tag tag at a given name
 	 */
-	bool get_tag_by_name(const std::string &name, region_chunk_tag &tag);
-
-	/*
-	 * Set region chunk tag root tag
-	 */
-	void set_root_tag(generic_tag *root);
+	generic_tag *get_tag_by_name(const std::string &name) { return get_tag_by_name_helper(name, root); }
 
 	/*
 	 * Returns a string representation of a region chunk tag

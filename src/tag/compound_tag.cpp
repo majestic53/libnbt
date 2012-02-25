@@ -59,7 +59,7 @@ bool compound_tag::operator==(const compound_tag &other) {
  */
 generic_tag *compound_tag::at(unsigned int index) {
 	if(index >= value.size())
-		return 0;
+		return NULL;
 	return value.at(index);
 }
 
@@ -72,12 +72,13 @@ std::string compound_tag::to_string(void) {
 	// create string representation
 	ss << generic_tag::type_to_string(type);
 	if(!name.empty())
-		ss << " " << name << " (" << value.size() << ")";
+		ss << " " << name;
+	ss << " (" << value.size() << ")";
 	if(!value.empty()) {
 		ss << " {" << std::endl;
 		for(unsigned int i = 0; i < value.size(); ++i)
 			ss << "\t" << value.at(i)->to_string() << std::endl;
 		ss << "}";
 	}
-	return ss.str();
+	return ss.str().c_str();
 }

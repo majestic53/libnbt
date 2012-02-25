@@ -59,7 +59,7 @@ bool list_tag::operator==(const list_tag &other) {
  */
 generic_tag *list_tag::at(unsigned int index) {
 	if(index >= value.size())
-		return 0;
+		return NULL;
 	return value.at(index);
 }
 

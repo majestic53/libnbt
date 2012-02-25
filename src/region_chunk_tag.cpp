@@ -18,6 +18,7 @@
  */
 
 #include "region_chunk_tag.hpp"
+#include "region_file_exc.hpp"
 
 /*
  * Region chunk tag assignment
@@ -80,54 +81,116 @@ void region_chunk_tag::cleanup(generic_tag *tag) {
 }
 
 /*
- * Return a region chunk tag tag at a given name
+ * Copies the contents of a root tag into another
  */
-bool region_chunk_tag::get_tag_by_name(const std::string &name, region_chunk_tag &tag) {
-	region_chunk_tag::cleanup(tag.get_root_tag());
-	get_tag_by_name_helper(name, root, tag.get_root_tag());
-	if(tag.empty())
+bool region_chunk_tag::copy(generic_tag *root, generic_tag *&tag) {
+	compound_tag *cmp_tag = NULL;
+	list_tag *lst_tag = NULL;
+	generic_tag *new_tag = NULL;
+	std::vector<generic_tag *> value;
+
+	// check for valid root
+	if(!root)
 		return false;
+
+	// clear tag if its allocated
+	if(tag) {
+		delete tag;
+		tag = NULL;
+	}
+
+	// copy tags based off type
+	switch(root->get_type()) {
+		case generic_tag::COMPOUND:
+			cmp_tag = dynamic_cast<compound_tag *>(root);
+			for(unsigned int i = 0; i < cmp_tag->size(); ++i) {
+				if(!copy(cmp_tag->at(i), new_tag))
+					return false;
+				value.push_back(new_tag);
+			}
+			tag = new compound_tag(root->get_name(), value);
+			if(!tag)
+				return false;
+			break;
+		case generic_tag::LIST:
+			lst_tag = dynamic_cast<list_tag *>(root);
+			for(unsigned int i = 0; i < lst_tag->size(); ++i) {
+				if(!copy(lst_tag->at(i), new_tag))
+					return false;
+				value.push_back(new_tag);
+			}
+			tag = new list_tag(root->get_name(), value);
+			break;
+		default:
+			switch(root->get_type()) {
+				case generic_tag::BYTE_ARRAY:
+					tag = new byte_array_tag(*dynamic_cast<byte_array_tag *>(root));
+					break;
+				case generic_tag::BYTE:
+					tag = new byte_tag(*dynamic_cast<byte_tag *>(root));
+					break;
+				case generic_tag::DOUBLE:
+					tag = new double_tag(*dynamic_cast<double_tag *>(root));
+					break;
+				case generic_tag::END:
+					tag = new end_tag(*dynamic_cast<end_tag *>(root));
+					break;
+				case generic_tag::FLOAT:
+					tag = new float_tag(*dynamic_cast<float_tag *>(root));
+					break;
+				case generic_tag::INT:
+					tag = new int_tag(*dynamic_cast<int_tag *>(root));
+					break;
+				case generic_tag::LONG:
+					tag = new long_tag(*dynamic_cast<long_tag *>(root));
+					break;
+				case generic_tag::SHORT:
+					tag = new short_tag(*dynamic_cast<short_tag *>(root));
+					break;
+				case generic_tag::STRING:
+					tag = new string_tag(*dynamic_cast<string_tag *>(root));
+					break;
+				default:
+					throw region_file_exc(region_file_exc::UNKNOWN_TAG_TYPE, root->get_type());
+					break;
+			}
+			break;
+	}
 	return true;
 }
 
 /*
  * Get tag by name helper
  */
-void region_chunk_tag::get_tag_by_name_helper(const std::string name, generic_tag *root, generic_tag *&tag) {
+generic_tag *region_chunk_tag::get_tag_by_name_helper(const std::string name, generic_tag *root) {
 	compound_tag *cmp_tag = NULL;
 	list_tag *lst_tag = NULL;
 
-	// check for valid tag
+	// check for valid root
 	if(!root)
-		return;
+		return NULL;
 
 	// check tag for matching name
-	if(root->get_name() == name) {
-		tag = root;
-		return;
-	}
+	if(root->get_name() == name)
+		return root;
 
 	// Iterate through all complex types
 	switch(root->get_type()) {
 		case generic_tag::COMPOUND:
 			cmp_tag = dynamic_cast<compound_tag *>(root);
-			for(unsigned int i = 0; i < cmp_tag->size(); ++i)
-				get_tag_by_name_helper(name, cmp_tag->at(i), tag);
+			for(unsigned int i = 0; i < cmp_tag->size(); ++i) {
+				if(generic_tag *sub_tag = get_tag_by_name_helper(name, cmp_tag->at(i)))
+					return sub_tag;
+			}
 			break;
 		case generic_tag::LIST:
 			lst_tag = dynamic_cast<list_tag *>(root);
 			for(unsigned int i = 0; i < lst_tag->size(); ++i)
-				return get_tag_by_name_helper(name, lst_tag->at(i), tag);
+				if(generic_tag *sub_tag = get_tag_by_name_helper(name, lst_tag->at(i)))
+					return sub_tag;
 			break;
 	}
-}
-
-/*
- * Set region chunk tag root tag
- */
-void region_chunk_tag::set_root_tag(generic_tag *root) {
-	cleanup(this->root);
-	this->root = root;
+	return NULL;
 }
 
 /*

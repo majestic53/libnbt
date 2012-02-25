@@ -50,7 +50,7 @@ public:
 	/*
 	 * Region file exception constructor
 	 */
-	region_file_exc(void) { exc = UNDEFINED; };
+	region_file_exc(void) : exc(UNDEFINED) { return; };
 
 	/*
 	 * Region file exception constructor
