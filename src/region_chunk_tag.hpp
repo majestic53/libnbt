@@ -56,12 +56,17 @@ public:
 	/*
 	 * Region chunk tag constructor
 	 */
-	region_chunk_tag(const region_chunk_tag &other) : root(other.root) { return; }
+	region_chunk_tag(const region_chunk_tag &other);
+
+	/*
+	 * Region chunk tag constructor
+	 */
+	region_chunk_tag(generic_tag *root);
 
 	/*
 	 * Region chunk tag destructor
 	 */
-	virtual ~region_chunk_tag(void) { cleanup(root); }
+	virtual ~region_chunk_tag(void) { cleanup(); }
 
 	/*
 	 * Region chunk tag assignment
@@ -79,6 +84,11 @@ public:
 	bool operator!=(const region_chunk_tag &other) { return !(*this == other); }
 
 	/*
+	 * Cleanup a root tag
+	 */
+	void cleanup(void) { cleanup(root); }
+
+	/*
 	 * Cleanup a series of tags
 	 */
 	static void cleanup(generic_tag *tag);
@@ -86,7 +96,12 @@ public:
 	/*
 	 * Copies the contents of a root tag into another
 	 */
-	static bool copy(generic_tag *root, generic_tag *&tag);
+	bool copy(generic_tag *&dest) { return copy(root, dest); }
+
+	/*
+	 * Copies the contents of a tag into another
+	 */
+	static bool copy(generic_tag *src, generic_tag *&dest);
 
 	/*
 	 * Region chunk tag empty status

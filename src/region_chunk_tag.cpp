@@ -21,6 +21,28 @@
 #include "region_file_exc.hpp"
 
 /*
+ * Region chunk tag constructor
+ */
+region_chunk_tag::region_chunk_tag(const region_chunk_tag &other) {
+
+	// copy root tag
+	this->root = NULL;
+	if(!copy(other.root, this->root))
+		this->root = NULL;
+}
+
+/*
+ * Region chunk tag constructor
+ */
+region_chunk_tag::region_chunk_tag(generic_tag *root) {
+
+	// copy root tag
+	this->root = NULL;
+	if(!copy(root, this->root))
+		this->root = NULL;
+}
+
+/*
  * Region chunk tag assignment
  */
 region_chunk_tag &region_chunk_tag::operator=(const region_chunk_tag &other) {
@@ -83,75 +105,75 @@ void region_chunk_tag::cleanup(generic_tag *tag) {
 /*
  * Copies the contents of a root tag into another
  */
-bool region_chunk_tag::copy(generic_tag *root, generic_tag *&tag) {
+bool region_chunk_tag::copy(generic_tag *src, generic_tag *&dest) {
 	compound_tag *cmp_tag = NULL;
 	list_tag *lst_tag = NULL;
 	generic_tag *new_tag = NULL;
 	std::vector<generic_tag *> value;
 
 	// check for valid root
-	if(!root)
+	if(!src)
 		return false;
 
 	// clear tag if its allocated
-	if(tag) {
-		delete tag;
-		tag = NULL;
+	if(dest) {
+		delete dest;
+		dest = NULL;
 	}
 
 	// copy tags based off type
-	switch(root->get_type()) {
+	switch(src->get_type()) {
 		case generic_tag::COMPOUND:
-			cmp_tag = dynamic_cast<compound_tag *>(root);
+			cmp_tag = dynamic_cast<compound_tag *>(src);
 			for(unsigned int i = 0; i < cmp_tag->size(); ++i) {
 				if(!copy(cmp_tag->at(i), new_tag))
 					return false;
 				value.push_back(new_tag);
 			}
-			tag = new compound_tag(root->get_name(), value);
-			if(!tag)
+			dest = new compound_tag(src->get_name(), value);
+			if(!dest)
 				return false;
 			break;
 		case generic_tag::LIST:
-			lst_tag = dynamic_cast<list_tag *>(root);
+			lst_tag = dynamic_cast<list_tag *>(src);
 			for(unsigned int i = 0; i < lst_tag->size(); ++i) {
 				if(!copy(lst_tag->at(i), new_tag))
 					return false;
 				value.push_back(new_tag);
 			}
-			tag = new list_tag(root->get_name(), value);
+			dest = new list_tag(src->get_name(), value);
 			break;
 		default:
-			switch(root->get_type()) {
+			switch(src->get_type()) {
 				case generic_tag::BYTE_ARRAY:
-					tag = new byte_array_tag(*dynamic_cast<byte_array_tag *>(root));
+					dest = new byte_array_tag(*dynamic_cast<byte_array_tag *>(src));
 					break;
 				case generic_tag::BYTE:
-					tag = new byte_tag(*dynamic_cast<byte_tag *>(root));
+					dest = new byte_tag(*dynamic_cast<byte_tag *>(src));
 					break;
 				case generic_tag::DOUBLE:
-					tag = new double_tag(*dynamic_cast<double_tag *>(root));
+					dest = new double_tag(*dynamic_cast<double_tag *>(src));
 					break;
 				case generic_tag::END:
-					tag = new end_tag(*dynamic_cast<end_tag *>(root));
+					dest = new end_tag(*dynamic_cast<end_tag *>(src));
 					break;
 				case generic_tag::FLOAT:
-					tag = new float_tag(*dynamic_cast<float_tag *>(root));
+					dest = new float_tag(*dynamic_cast<float_tag *>(src));
 					break;
 				case generic_tag::INT:
-					tag = new int_tag(*dynamic_cast<int_tag *>(root));
+					dest = new int_tag(*dynamic_cast<int_tag *>(src));
 					break;
 				case generic_tag::LONG:
-					tag = new long_tag(*dynamic_cast<long_tag *>(root));
+					dest = new long_tag(*dynamic_cast<long_tag *>(src));
 					break;
 				case generic_tag::SHORT:
-					tag = new short_tag(*dynamic_cast<short_tag *>(root));
+					dest = new short_tag(*dynamic_cast<short_tag *>(src));
 					break;
 				case generic_tag::STRING:
-					tag = new string_tag(*dynamic_cast<string_tag *>(root));
+					dest = new string_tag(*dynamic_cast<string_tag *>(src));
 					break;
 				default:
-					throw region_file_exc(region_file_exc::UNKNOWN_TAG_TYPE, root->get_type());
+					throw region_file_exc(region_file_exc::UNKNOWN_TAG_TYPE, src->get_type());
 					break;
 			}
 			break;
