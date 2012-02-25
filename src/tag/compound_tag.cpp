@@ -80,5 +80,5 @@ std::string compound_tag::to_string(void) {
 			ss << "\t" << value.at(i)->to_string() << std::endl;
 		ss << "}";
 	}
-	return ss.str().c_str();
+	return ss.str();
 }

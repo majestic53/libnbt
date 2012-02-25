@@ -72,7 +72,8 @@ std::string list_tag::to_string(void) {
 	// create string representation
 	ss << generic_tag::type_to_string(type);
 	if(!name.empty())
-		ss << " " << name << " (" << value.size() << ")";
+		ss << " " << name;
+	ss << " (" << value.size() << ")";
 	if(!value.empty()) {
 		ss << " {" << std::endl;
 		for(unsigned int i = 0; i < value.size(); ++i)
