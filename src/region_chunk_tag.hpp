@@ -32,6 +32,11 @@ private:
 	 */
 	generic_tag *root;
 
+	/*
+	 * Get tag by name helper
+	 */
+	void get_tag_by_name_helper(const std::string name, generic_tag *root, generic_tag *&tag);
+
 public:
 
 	/*
@@ -82,7 +87,7 @@ public:
 	/*
 	 * Return a region chunk tag tag at a given name
 	 */
-	generic_tag *get_tag_by_name(const std::string &name);
+	bool get_tag_by_name(const std::string &name, region_chunk_tag &tag);
 
 	/*
 	 * Set region chunk tag root tag

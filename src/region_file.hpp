@@ -86,11 +86,6 @@ private:
 	void inflate_zlib(std::vector<int8_t> &in, std::vector<int8_t> &out);
 
 	/*
-	 * Creates a tag from stream
-	 */
-	generic_tag *read_tag(const std::string &name, unsigned int type, byte_stream &stream);
-
-	/*
 	 * Reads an array tag value from stream
 	 */
 	template <class T>
@@ -139,6 +134,11 @@ private:
 	 * Reads a string tag value from stream
 	 */
 	void read_string_value(byte_stream &stream, std::string &value);
+
+	/*
+	 * Creates a tag from stream
+	 */
+	generic_tag *read_tag(const std::string &name, unsigned int type, byte_stream &stream);
 
 public:
 

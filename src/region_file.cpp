@@ -327,6 +327,71 @@ void region_file::read(const std::string &path) {
 }
 
 /*
+ * Reads a compound tag value from stream
+ */
+void region_file::read_compound_value(byte_stream &stream, std::vector<generic_tag *> &value) {
+	int16_t name_len;
+	int8_t ch, ele_type;
+	std::string name;
+
+	// check stream status
+	if(!stream.good())
+		throw region_file_exc(region_file_exc::STREAM_READ_ERROR, stream.position());
+
+	// retrieve compound value
+	do {
+		stream >> ele_type;
+		if(ele_type != generic_tag::END) {
+			stream >> name_len;
+			name.clear();
+			for(int i = 0; i < name_len; i++) {
+				stream >> ch;
+				name += ch;
+			}
+			value.push_back(read_tag(name, ele_type, stream));
+		}
+	} while(ele_type != generic_tag::END);
+}
+
+/*
+ * Reads a list tag value from stream
+ */
+void region_file::read_list_value(byte_stream &stream, std::vector<generic_tag *> &value) {
+	int32_t len;
+	int8_t ele_type;
+
+	// check stream status
+	if(!stream.good())
+		throw region_file_exc(region_file_exc::STREAM_READ_ERROR, stream.position());
+
+	// retrieve list value
+	stream >> ele_type;
+	stream >> len;
+	len = abs(len);
+	for(int i = 0; i < len; i++)
+		value.push_back(read_tag("", ele_type, stream));
+}
+
+/*
+ * Reads a string tag value from stream
+ */
+void region_file::read_string_value(byte_stream &stream, std::string &value) {
+	int8_t ch;
+	int16_t str_len;
+
+	// check stream status
+	if(!stream.good())
+		throw region_file_exc(region_file_exc::STREAM_READ_ERROR, stream.position());
+
+	// retrieve string value
+	stream >> str_len;
+	for(int i = 0; i < str_len; i++) {
+		stream >> ch;
+		value += ch;
+	}
+}
+
+/*
  * Creates a tag from stream
  */
 generic_tag *region_file::read_tag(const std::string &name, unsigned int type, byte_stream &stream) {
@@ -392,71 +457,6 @@ generic_tag *region_file::read_tag(const std::string &name, unsigned int type, b
 			throw region_file_exc(region_file_exc::UNKNOWN_TAG_TYPE, type);
 	}
 	return tag;
-}
-
-/*
- * Reads a compound tag value from stream
- */
-void region_file::read_compound_value(byte_stream &stream, std::vector<generic_tag *> &value) {
-	int16_t name_len;
-	int8_t ch, ele_type;
-	std::string name;
-
-	// check stream status
-	if(!stream.good())
-		throw region_file_exc(region_file_exc::STREAM_READ_ERROR, stream.position());
-
-	// retrieve compound value
-	do {
-		stream >> ele_type;
-		if(ele_type != generic_tag::END) {
-			stream >> name_len;
-			name.clear();
-			for(int i = 0; i < name_len; i++) {
-				stream >> ch;
-				name += ch;
-			}
-			value.push_back(read_tag(name, ele_type, stream));
-		}
-	} while(ele_type != generic_tag::END);
-}
-
-/*
- * Reads a list tag value from stream
- */
-void region_file::read_list_value(byte_stream &stream, std::vector<generic_tag *> &value) {
-	int32_t len;
-	int8_t ele_type;
-
-	// check stream status
-	if(!stream.good())
-		throw region_file_exc(region_file_exc::STREAM_READ_ERROR, stream.position());
-
-	// retrieve list value
-	stream >> ele_type;
-	stream >> len;
-	len = abs(len);
-	for(int i = 0; i < len; i++)
-		value.push_back(read_tag("", ele_type, stream));
-}
-
-/*
- * Reads a string tag value from stream
- */
-void region_file::read_string_value(byte_stream &stream, std::string &value) {
-	int8_t ch;
-	int16_t str_len;
-
-	// check stream status
-	if(!stream.good())
-		throw region_file_exc(region_file_exc::STREAM_READ_ERROR, stream.position());
-
-	// retrieve string value
-	stream >> str_len;
-	for(int i = 0; i < str_len; i++) {
-		stream >> ch;
-		value += ch;
-	}
 }
 
 /*

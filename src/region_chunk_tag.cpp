@@ -54,6 +54,7 @@ void region_chunk_tag::cleanup(generic_tag *tag) {
 	compound_tag *cmp_tag = NULL;
 	list_tag *lst_tag = NULL;
 
+	// check for valid tag
 	if(!tag)
 		return;
 
@@ -81,11 +82,44 @@ void region_chunk_tag::cleanup(generic_tag *tag) {
 /*
  * Return a region chunk tag tag at a given name
  */
-generic_tag *region_chunk_tag::get_tag_by_name(const std::string &name) {
+bool region_chunk_tag::get_tag_by_name(const std::string &name, region_chunk_tag &tag) {
+	region_chunk_tag::cleanup(tag.get_root_tag());
+	get_tag_by_name_helper(name, root, tag.get_root_tag());
+	if(tag.empty())
+		return false;
+	return true;
+}
 
-	// TODO: Add ability to return a region subtag at a given name
+/*
+ * Get tag by name helper
+ */
+void region_chunk_tag::get_tag_by_name_helper(const std::string name, generic_tag *root, generic_tag *&tag) {
+	compound_tag *cmp_tag = NULL;
+	list_tag *lst_tag = NULL;
 
-	return NULL;
+	// check for valid tag
+	if(!root)
+		return;
+
+	// check tag for matching name
+	if(root->get_name() == name) {
+		tag = root;
+		return;
+	}
+
+	// Iterate through all complex types
+	switch(root->get_type()) {
+		case generic_tag::COMPOUND:
+			cmp_tag = dynamic_cast<compound_tag *>(root);
+			for(unsigned int i = 0; i < cmp_tag->size(); ++i)
+				get_tag_by_name_helper(name, cmp_tag->at(i), tag);
+			break;
+		case generic_tag::LIST:
+			lst_tag = dynamic_cast<list_tag *>(root);
+			for(unsigned int i = 0; i < lst_tag->size(); ++i)
+				return get_tag_by_name_helper(name, lst_tag->at(i), tag);
+			break;
+	}
 }
 
 /*

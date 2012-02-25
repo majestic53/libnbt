@@ -80,6 +80,11 @@ public:
 	bool operator!=(const region_chunk_info &other) { return !(*this == other); }
 
 	/*
+	 * Returns region chunk info filled status
+	 */
+	bool filled(void) { return pos; }
+
+	/*
 	 * Returns a region chunk info's last modified time
 	 */
 	time_t get_modified(void) { return modified; }
