@@ -44,7 +44,6 @@ region_file::region_file(const region_file &other) : filled(other.filled), path(
 		throw region_file_exc(region_file_exc::ALLOC_FAIL);
 
 	// assign all attributes
-	file.close();
 	for(unsigned int i = 0; i < CHUNK_COUNT; ++i)
 		info[i] = other.info[i];
 }

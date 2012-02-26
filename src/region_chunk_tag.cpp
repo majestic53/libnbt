@@ -52,8 +52,10 @@ region_chunk_tag &region_chunk_tag::operator=(const region_chunk_tag &other) {
 		return *this;
 
 	// set attributes
-	cleanup(root);
-	root = other.root;
+	if(root)
+		cleanup(root);
+	if(!copy(other.root, root))
+		root = NULL;
 	return *this;
 }
 
@@ -66,14 +68,22 @@ bool region_chunk_tag::operator==(const region_chunk_tag &other) {
 	if(this == &other)
 		return true;
 
-	// check attributes
-	return root == other.root;
+	// check for valid roots
+	if(!root
+			&& !other.root)
+		return true;
+	else if(!root
+			|| !other.root)
+		return false;
+
+	equals(root, other.root);
+	return true;
 }
 
 /*
  * Cleanup a series of tags
  */
-void region_chunk_tag::cleanup(generic_tag *tag) {
+void region_chunk_tag::cleanup(generic_tag *&tag) {
 	compound_tag *cmp_tag = NULL;
 	list_tag *lst_tag = NULL;
 
@@ -85,15 +95,23 @@ void region_chunk_tag::cleanup(generic_tag *tag) {
 	switch(tag->get_type()) {
 		case generic_tag::COMPOUND:
 			cmp_tag = dynamic_cast<compound_tag *>(tag);
-			for(unsigned int i = 0; i < cmp_tag->size(); ++i)
-				cleanup(cmp_tag->at(i));
+			if(!cmp_tag)
+				break;
+			for(unsigned int i = 0; i < cmp_tag->size(); ++i) {
+				generic_tag *sub_tag = cmp_tag->at(i);
+				cleanup(sub_tag);
+			}
 			cmp_tag->value.clear();
 			delete cmp_tag;
 			break;
 		case generic_tag::LIST:
 			lst_tag = dynamic_cast<list_tag *>(tag);
-			for(unsigned int i = 0; i < lst_tag->size(); ++i)
-				cleanup(lst_tag->at(i));
+			if(!lst_tag)
+				break;
+			for(unsigned int i = 0; i < lst_tag->size(); ++i) {
+				generic_tag *sub_tag = lst_tag->at(i);
+				cleanup(sub_tag);
+			}
 			lst_tag->value.clear();
 			delete lst_tag;
 			break;
@@ -115,16 +133,12 @@ bool region_chunk_tag::copy(generic_tag *src, generic_tag *&dest) {
 	if(!src)
 		return false;
 
-	// clear tag if its allocated
-	if(dest) {
-		delete dest;
-		dest = NULL;
-	}
-
 	// copy tags based off type
 	switch(src->get_type()) {
 		case generic_tag::COMPOUND:
 			cmp_tag = dynamic_cast<compound_tag *>(src);
+			if(!cmp_tag)
+				return false;
 			for(unsigned int i = 0; i < cmp_tag->size(); ++i) {
 				if(!copy(cmp_tag->at(i), new_tag))
 					return false;
@@ -136,6 +150,8 @@ bool region_chunk_tag::copy(generic_tag *src, generic_tag *&dest) {
 			break;
 		case generic_tag::LIST:
 			lst_tag = dynamic_cast<list_tag *>(src);
+			if(!lst_tag)
+				return false;
 			for(unsigned int i = 0; i < lst_tag->size(); ++i) {
 				if(!copy(lst_tag->at(i), new_tag))
 					return false;
@@ -182,9 +198,49 @@ bool region_chunk_tag::copy(generic_tag *src, generic_tag *&dest) {
 }
 
 /*
+ * Returns chunk tag equivalence of two tags
+ */
+bool region_chunk_tag::equals(generic_tag *tag1, generic_tag *tag2) {
+	compound_tag *cmp_tag1 = NULL, *cmp_tag2 = NULL;
+	list_tag *lst_tag1 = NULL, *lst_tag2 = NULL;
+
+	// check for valid tags
+	if(!tag1
+			|| !tag2)
+		return false;
+
+	// iterate through all complex types
+	switch(tag1->get_type()) {
+		case generic_tag::COMPOUND:
+			cmp_tag1 = dynamic_cast<compound_tag *>(tag1);
+			cmp_tag2 = dynamic_cast<compound_tag *>(tag2);
+			if(cmp_tag1->size() != cmp_tag2->size())
+				return false;
+			for(unsigned int i = 0; i < cmp_tag1->size(); ++i)
+				if(!equals(cmp_tag1->at(i), cmp_tag2->at(i)))
+					return false;
+			break;
+		case generic_tag::LIST:
+			lst_tag1 = dynamic_cast<list_tag *>(tag1);
+			lst_tag2 = dynamic_cast<list_tag *>(tag2);
+			if(lst_tag1->size() != lst_tag2->size())
+				return false;
+			for(unsigned int i = 0; i < lst_tag1->size(); ++i)
+				if(!equals(lst_tag1->at(i), lst_tag2->at(i)))
+					return false;
+			break;
+		default:
+			if(*tag1 != *tag2)
+				return false;
+			break;
+	}
+	return true;
+}
+
+/*
  * Get tag by name helper
  */
-generic_tag *region_chunk_tag::get_tag_by_name_helper(const std::string name, generic_tag *root) {
+generic_tag *region_chunk_tag::get_tag_by_name_helper(const std::string &name, generic_tag *root) {
 	compound_tag *cmp_tag = NULL;
 	list_tag *lst_tag = NULL;
 
@@ -196,10 +252,12 @@ generic_tag *region_chunk_tag::get_tag_by_name_helper(const std::string name, ge
 	if(root->get_name() == name)
 		return root;
 
-	// Iterate through all complex types
+	// iterate through all complex types
 	switch(root->get_type()) {
 		case generic_tag::COMPOUND:
 			cmp_tag = dynamic_cast<compound_tag *>(root);
+			if(!cmp_tag)
+				return NULL;
 			for(unsigned int i = 0; i < cmp_tag->size(); ++i) {
 				if(generic_tag *sub_tag = get_tag_by_name_helper(name, cmp_tag->at(i)))
 					return sub_tag;
@@ -207,6 +265,8 @@ generic_tag *region_chunk_tag::get_tag_by_name_helper(const std::string name, ge
 			break;
 		case generic_tag::LIST:
 			lst_tag = dynamic_cast<list_tag *>(root);
+			if(!lst_tag)
+				return NULL;
 			for(unsigned int i = 0; i < lst_tag->size(); ++i)
 				if(generic_tag *sub_tag = get_tag_by_name_helper(name, lst_tag->at(i)))
 					return sub_tag;

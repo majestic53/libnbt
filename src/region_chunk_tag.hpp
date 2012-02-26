@@ -44,7 +44,7 @@ private:
 	/*
 	 * Get tag by name helper
 	 */
-	generic_tag *get_tag_by_name_helper(const std::string name, generic_tag *root);
+	generic_tag *get_tag_by_name_helper(const std::string &name, generic_tag *root);
 
 public:
 
@@ -91,7 +91,7 @@ public:
 	/*
 	 * Cleanup a series of tags
 	 */
-	static void cleanup(generic_tag *tag);
+	static void cleanup(generic_tag *&tag);
 
 	/*
 	 * Copies the contents of a root tag into another
@@ -107,6 +107,11 @@ public:
 	 * Region chunk tag empty status
 	 */
 	bool empty(void) { return !root; }
+
+	/*
+	 * Returns chunk tag equivalence of two tags
+	 */
+	static bool equals(generic_tag *tag1, generic_tag *tag2);
 
 	/*
 	 * Return region chunk tag root tag
