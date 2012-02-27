@@ -108,6 +108,24 @@ bool region_file_reader::operator==(const region_file_reader &other) {
 }
 
 /*
+ * Returns a chunk tag in a region file reader at a given x, z coord
+ */
+region_chunk_tag &get_chunk_tag_at(unsigned int x, unsigned int z) {
+
+	// TODO
+
+}
+
+/*
+ * Returns fill status of a chunk in a region file reader at a given x, z coord
+ */
+bool is_filled(unsigned int x, unsigned int z) {
+
+	// TODO
+
+}
+
+/*
  * Returns a string representation of a region file reader
  */
 std::string region_file_reader::to_string(void) {

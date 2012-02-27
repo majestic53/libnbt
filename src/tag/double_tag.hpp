@@ -53,7 +53,7 @@ public:
 	/*
 	 * Double tag destructor
 	 */
-	virtual ~double_tag(void) { return; }
+	~double_tag(void) { return; }
 
 	/*
 	 * Double tag assignment

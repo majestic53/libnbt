@@ -54,7 +54,7 @@ public:
 	/*
 	 * String tag destructor
 	 */
-	virtual ~string_tag(void) { return; }
+	~string_tag(void) { return; }
 
 	/*
 	 * String tag assignment

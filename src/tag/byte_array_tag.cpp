@@ -46,7 +46,7 @@ bool byte_array_tag::operator==(const byte_array_tag &other) {
 
 	// check attributes
 	if(generic_tag::operator !=(other)
-			|| value.size() == other.value.size())
+			|| value.size() != other.value.size())
 		return false;
 	for(unsigned int i = 0; i < value.size(); ++i)
 		if(value.at(i) != other.value.at(i))

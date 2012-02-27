@@ -54,7 +54,7 @@ public:
 	/*
 	 * Int tag destructor
 	 */
-	virtual ~int_tag(void) { return; }
+	~int_tag(void) { return; }
 
 	/*
 	 * Int tag assignment

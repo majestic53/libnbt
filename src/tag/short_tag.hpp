@@ -53,7 +53,7 @@ public:
 	/*
 	 * Short tag destructor
 	 */
-	virtual ~short_tag(void) { return; }
+	~short_tag(void) { return; }
 
 	/*
 	 * Short tag assignment

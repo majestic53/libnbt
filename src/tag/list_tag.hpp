@@ -54,7 +54,7 @@ public:
 	/*
 	 * List tag destructor
 	 */
-	virtual ~list_tag(void) { value.clear(); }
+	~list_tag(void) { value.clear(); }
 
 	/*
 	 * List tag assignment

@@ -68,17 +68,17 @@ public:
 	/*
 	 * Generic tag assignment
 	 */
-	virtual generic_tag &operator=(const generic_tag &other);
+	generic_tag &operator=(const generic_tag &other);
 
 	/*
 	 * Generic tag equals
 	 */
-	virtual bool operator==(const generic_tag &other);
+	bool operator==(const generic_tag &other);
 
 	/*
 	 * Generic tag not equals
 	 */
-	virtual bool operator!=(const generic_tag &other) { return !(*this == other); }
+	bool operator!=(const generic_tag &other) { return !(*this == other); }
 
 	/*
 	 * Returns a generic tags name

@@ -38,7 +38,7 @@ public:
 	/*
 	 * End tag destructor
 	 */
-	virtual ~end_tag(void) { return; }
+	~end_tag(void) { return; }
 
 	/*
 	 * End tag assignment

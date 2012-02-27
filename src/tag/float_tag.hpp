@@ -53,7 +53,7 @@ public:
 	/*
 	 * Float tag destructor
 	 */
-	virtual ~float_tag(void) { return; }
+	~float_tag(void) { return; }
 
 	/*
 	 * Float tag assignment

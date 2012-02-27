@@ -55,7 +55,7 @@ public:
 	/*
 	 * Byte array tag destructor
 	 */
-	virtual ~byte_array_tag(void) { value.clear(); }
+	~byte_array_tag(void) { value.clear(); }
 
 	/*
 	 * Byte array tag assignment

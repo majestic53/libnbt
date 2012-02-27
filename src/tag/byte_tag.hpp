@@ -54,7 +54,7 @@ public:
 	/*
 	 * Byte tag destructor
 	 */
-	virtual ~byte_tag(void) { return; }
+	~byte_tag(void) { return; }
 
 	/*
 	 * Byte tag assignment

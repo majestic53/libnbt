@@ -18,7 +18,18 @@
  */
 
 #include <sstream>
+#include "byte_array_tag.hpp"
+#include "byte_tag.hpp"
+#include "compound_tag.hpp"
+#include "double_tag.hpp"
+#include "end_tag.hpp"
+#include "float_tag.hpp"
+#include "generic_tag.hpp"
+#include "int_tag.hpp"
 #include "list_tag.hpp"
+#include "long_tag.hpp"
+#include "short_tag.hpp"
+#include "string_tag.hpp"
 
 /*
  * List tag assignment
@@ -46,11 +57,61 @@ bool list_tag::operator==(const list_tag &other) {
 
 	// check attributes
 	if(generic_tag::operator !=(other)
-			|| value.size() == other.value.size())
+			|| value.size() != other.value.size())
 		return false;
-	for(unsigned int i = 0; i < value.size(); ++i)
-		if(value.at(i) != other.value.at(i))
+	for(unsigned int i = 0; i < value.size(); ++i) {
+		if(value.at(i)->get_type() != other.value.at(i)->get_type())
 			return false;
+		switch(value.at(i)->get_type()) {
+			case generic_tag::COMPOUND:
+				if((compound_tag) *static_cast<compound_tag *>(value.at(i)) != *static_cast<compound_tag *>(other.value.at(i)))
+					return false;
+				break;
+			case generic_tag::LIST:
+				if(*static_cast<list_tag *>(value.at(i)) != *static_cast<list_tag *>(other.value.at(i)))
+					return false;
+				break;
+			case generic_tag::BYTE_ARRAY:
+				if(*static_cast<byte_array_tag *>(value.at(i)) != *static_cast<byte_array_tag *>(other.value.at(i)))
+					return false;
+				break;
+			case generic_tag::BYTE:
+				if(*static_cast<byte_tag *>(value.at(i)) != *static_cast<byte_tag *>(other.value.at(i)))
+					return false;
+				break;
+			case generic_tag::DOUBLE:
+				if(*static_cast<double_tag *>(value.at(i)) != *static_cast<double_tag *>(other.value.at(i)))
+					return false;
+				break;
+			case generic_tag::END:
+				if(*static_cast<end_tag *>(value.at(i)) != *static_cast<end_tag *>(other.value.at(i)))
+					return false;
+				break;
+			case generic_tag::FLOAT:
+				if(*static_cast<float_tag *>(value.at(i)) != *static_cast<float_tag *>(other.value.at(i)))
+					return false;
+				break;
+			case generic_tag::INT:
+				if(*static_cast<int_tag *>(value.at(i)) != *static_cast<int_tag *>(other.value.at(i)))
+					return false;
+				break;
+			case generic_tag::LONG:
+				if(*static_cast<long_tag *>(value.at(i)) != *static_cast<long_tag *>(other.value.at(i)))
+					return false;
+				break;
+			case generic_tag::SHORT:
+				if(*static_cast<short_tag *>(value.at(i)) != *static_cast<short_tag *>(other.value.at(i)))
+					return false;
+				break;
+			case generic_tag::STRING:
+				if(*static_cast<string_tag *>(value.at(i)) != *static_cast<string_tag *>(other.value.at(i)))
+					return false;
+				break;
+			default:
+				return false;
+				break;
+		}
+	}
 	return true;
 }
 

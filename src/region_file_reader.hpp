@@ -86,7 +86,27 @@ public:
 	 */
 	bool operator!=(const region_file_reader &other) { return !(*this == other); }
 
-	// TODO: ADD FUNCTIONS TO HANDLE READING BLOCKS, ETC.
+	// TODO: ADD FUNCTIONS TO HANDLE BLOCKS, X/Z, HEIGHTMAP, ETC.
+
+	/*
+	 * Returns a chunk tag in a region file reader at a given x, z coord
+	 */
+	region_chunk_tag &get_chunk_tag_at(unsigned int x, unsigned int z);
+
+	/*
+	 * Returns a region file readers fill count
+	 */
+	unsigned int get_fill_count(void) { return fill_count; }
+
+	/*
+	 * Returns a region file readers path
+	 */
+	std::string get_path(void) { return path; }
+
+	/*
+	 * Returns fill status of a chunk in a region file reader at a given x, z coord
+	 */
+	bool is_filled(unsigned int x, unsigned int z);
 
 	/*
 	 * Returns a string representation of a region file reader

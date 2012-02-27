@@ -54,7 +54,7 @@ public:
 	/*
 	 * Compound tag destructor
 	 */
-	virtual ~compound_tag(void) { value.clear(); }
+	~compound_tag(void) { value.clear(); }
 
 	/*
 	 * Compound tag assignment

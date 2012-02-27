@@ -75,9 +75,7 @@ bool region_chunk_tag::operator==(const region_chunk_tag &other) {
 	else if(!root
 			|| !other.root)
 		return false;
-
-	equals(root, other.root);
-	return true;
+	return equals(root, other.root);
 }
 
 /*
@@ -94,9 +92,7 @@ void region_chunk_tag::cleanup(generic_tag *&tag) {
 	// cleanup each tag based off its type
 	switch(tag->get_type()) {
 		case generic_tag::COMPOUND:
-			cmp_tag = dynamic_cast<compound_tag *>(tag);
-			if(!cmp_tag)
-				break;
+			cmp_tag = static_cast<compound_tag *>(tag);
 			for(unsigned int i = 0; i < cmp_tag->size(); ++i) {
 				generic_tag *sub_tag = cmp_tag->at(i);
 				cleanup(sub_tag);
@@ -105,9 +101,7 @@ void region_chunk_tag::cleanup(generic_tag *&tag) {
 			delete cmp_tag;
 			break;
 		case generic_tag::LIST:
-			lst_tag = dynamic_cast<list_tag *>(tag);
-			if(!lst_tag)
-				break;
+			lst_tag = static_cast<list_tag *>(tag);
 			for(unsigned int i = 0; i < lst_tag->size(); ++i) {
 				generic_tag *sub_tag = lst_tag->at(i);
 				cleanup(sub_tag);
@@ -136,9 +130,7 @@ bool region_chunk_tag::copy(generic_tag *src, generic_tag *&dest) {
 	// copy tags based off type
 	switch(src->get_type()) {
 		case generic_tag::COMPOUND:
-			cmp_tag = dynamic_cast<compound_tag *>(src);
-			if(!cmp_tag)
-				return false;
+			cmp_tag = static_cast<compound_tag *>(src);
 			for(unsigned int i = 0; i < cmp_tag->size(); ++i) {
 				if(!copy(cmp_tag->at(i), new_tag))
 					return false;
@@ -149,9 +141,7 @@ bool region_chunk_tag::copy(generic_tag *src, generic_tag *&dest) {
 				return false;
 			break;
 		case generic_tag::LIST:
-			lst_tag = dynamic_cast<list_tag *>(src);
-			if(!lst_tag)
-				return false;
+			lst_tag = static_cast<list_tag *>(src);
 			for(unsigned int i = 0; i < lst_tag->size(); ++i) {
 				if(!copy(lst_tag->at(i), new_tag))
 					return false;
@@ -162,31 +152,31 @@ bool region_chunk_tag::copy(generic_tag *src, generic_tag *&dest) {
 		default:
 			switch(src->get_type()) {
 				case generic_tag::BYTE_ARRAY:
-					dest = new byte_array_tag(*dynamic_cast<byte_array_tag *>(src));
+					dest = new byte_array_tag(*static_cast<byte_array_tag *>(src));
 					break;
 				case generic_tag::BYTE:
-					dest = new byte_tag(*dynamic_cast<byte_tag *>(src));
+					dest = new byte_tag(*static_cast<byte_tag *>(src));
 					break;
 				case generic_tag::DOUBLE:
-					dest = new double_tag(*dynamic_cast<double_tag *>(src));
+					dest = new double_tag(*static_cast<double_tag *>(src));
 					break;
 				case generic_tag::END:
-					dest = new end_tag(*dynamic_cast<end_tag *>(src));
+					dest = new end_tag(*static_cast<end_tag *>(src));
 					break;
 				case generic_tag::FLOAT:
-					dest = new float_tag(*dynamic_cast<float_tag *>(src));
+					dest = new float_tag(*static_cast<float_tag *>(src));
 					break;
 				case generic_tag::INT:
-					dest = new int_tag(*dynamic_cast<int_tag *>(src));
+					dest = new int_tag(*static_cast<int_tag *>(src));
 					break;
 				case generic_tag::LONG:
-					dest = new long_tag(*dynamic_cast<long_tag *>(src));
+					dest = new long_tag(*static_cast<long_tag *>(src));
 					break;
 				case generic_tag::SHORT:
-					dest = new short_tag(*dynamic_cast<short_tag *>(src));
+					dest = new short_tag(*static_cast<short_tag *>(src));
 					break;
 				case generic_tag::STRING:
-					dest = new string_tag(*dynamic_cast<string_tag *>(src));
+					dest = new string_tag(*static_cast<string_tag *>(src));
 					break;
 				default:
 					throw region_file_exc(region_file_exc::UNKNOWN_TAG_TYPE, src->get_type());
@@ -201,37 +191,66 @@ bool region_chunk_tag::copy(generic_tag *src, generic_tag *&dest) {
  * Returns chunk tag equivalence of two tags
  */
 bool region_chunk_tag::equals(generic_tag *tag1, generic_tag *tag2) {
-	compound_tag *cmp_tag1 = NULL, *cmp_tag2 = NULL;
-	list_tag *lst_tag1 = NULL, *lst_tag2 = NULL;
+
+	// check for self
+	if(tag1 == tag2)
+		return true;
 
 	// check for valid tags
 	if(!tag1
 			|| !tag2)
 		return false;
 
-	// iterate through all complex types
+	// check for equaivalent tags
+	if(tag1->get_type() != tag2->get_type())
+		return false;
 	switch(tag1->get_type()) {
 		case generic_tag::COMPOUND:
-			cmp_tag1 = dynamic_cast<compound_tag *>(tag1);
-			cmp_tag2 = dynamic_cast<compound_tag *>(tag2);
-			if(cmp_tag1->size() != cmp_tag2->size())
+			if((compound_tag) *static_cast<compound_tag *>(tag1) != *static_cast<compound_tag *>(tag2))
 				return false;
-			for(unsigned int i = 0; i < cmp_tag1->size(); ++i)
-				if(!equals(cmp_tag1->at(i), cmp_tag2->at(i)))
-					return false;
 			break;
 		case generic_tag::LIST:
-			lst_tag1 = dynamic_cast<list_tag *>(tag1);
-			lst_tag2 = dynamic_cast<list_tag *>(tag2);
-			if(lst_tag1->size() != lst_tag2->size())
+			if(*static_cast<list_tag *>(tag1) != *static_cast<list_tag *>(tag2))
 				return false;
-			for(unsigned int i = 0; i < lst_tag1->size(); ++i)
-				if(!equals(lst_tag1->at(i), lst_tag2->at(i)))
-					return false;
+			break;
+		case generic_tag::BYTE_ARRAY:
+			if(*static_cast<byte_array_tag *>(tag1) != *static_cast<byte_array_tag *>(tag2))
+				return false;
+			break;
+		case generic_tag::BYTE:
+			if(*static_cast<byte_tag *>(tag1) != *static_cast<byte_tag *>(tag2))
+				return false;
+			break;
+		case generic_tag::DOUBLE:
+			if(*static_cast<double_tag *>(tag1) != *static_cast<double_tag *>(tag2))
+				return false;
+			break;
+		case generic_tag::END:
+			if(*static_cast<end_tag *>(tag1) != *static_cast<end_tag *>(tag2))
+				return false;
+			break;
+		case generic_tag::FLOAT:
+			if(*static_cast<float_tag *>(tag1) != *static_cast<float_tag *>(tag2))
+				return false;
+			break;
+		case generic_tag::INT:
+			if(*static_cast<int_tag *>(tag1) != *static_cast<int_tag *>(tag2))
+				return false;
+			break;
+		case generic_tag::LONG:
+			if(*static_cast<long_tag *>(tag1) != *static_cast<long_tag *>(tag2))
+				return false;
+			break;
+		case generic_tag::SHORT:
+			if(*static_cast<short_tag *>(tag1) != *static_cast<short_tag *>(tag2))
+				return false;
+			break;
+		case generic_tag::STRING:
+			if(*static_cast<string_tag *>(tag1) != *static_cast<string_tag *>(tag2))
+				return false;
 			break;
 		default:
-			if(*tag1 != *tag2)
-				return false;
+			return false;
 			break;
 	}
 	return true;
@@ -255,18 +274,14 @@ generic_tag *region_chunk_tag::get_tag_by_name_helper(const std::string &name, g
 	// iterate through all complex types
 	switch(root->get_type()) {
 		case generic_tag::COMPOUND:
-			cmp_tag = dynamic_cast<compound_tag *>(root);
-			if(!cmp_tag)
-				return NULL;
+			cmp_tag = static_cast<compound_tag *>(root);
 			for(unsigned int i = 0; i < cmp_tag->size(); ++i) {
 				if(generic_tag *sub_tag = get_tag_by_name_helper(name, cmp_tag->at(i)))
 					return sub_tag;
 			}
 			break;
 		case generic_tag::LIST:
-			lst_tag = dynamic_cast<list_tag *>(root);
-			if(!lst_tag)
-				return NULL;
+			lst_tag = static_cast<list_tag *>(root);
 			for(unsigned int i = 0; i < lst_tag->size(); ++i)
 				if(generic_tag *sub_tag = get_tag_by_name_helper(name, lst_tag->at(i)))
 					return sub_tag;

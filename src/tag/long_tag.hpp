@@ -53,7 +53,7 @@ public:
 	/*
 	 * Long tag destructor
 	 */
-	virtual ~long_tag(void) { return; }
+	~long_tag(void) { return; }
 
 	/*
 	 * Long tag assignment
