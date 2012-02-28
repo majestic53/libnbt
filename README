@@ -45,6 +45,14 @@ To read in block/heightmap data:
 	reader.get_chunk_blocks_at(x, z, blocks);
 	reader.get_chunk_heights_at(x, z, heights);
 
+Parsing block/heightmap data:
+
+	Data is stored in the chunks from the top-left to bottom right, and all coord are relative to
+	the chunk itself.
+
+	Block{ x, z, y } = y + z * 128 + x * 2048
+	HeightMap{ x, z } = z * 32 + x
+
 Putting it all together:
 
 #include <cstdint>
