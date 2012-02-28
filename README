@@ -1,32 +1,27 @@
-##libnbt is a C++ library for reading named byte tags
+libnbt is a C++ library for reading named byte tags
 
-##Usage
+Usage
 
 The easiest way to access block/heightmap data for each chunk is to
 use the region_file_reader object. No cleanup is necessary. All 
 allocations/deallocations are handled internally within the reader.
 
-###To instantiate a region_file_reader object, either:
+To instantiate a region_file_reader object, either:
 
-```c++ 
 region_file_reader reader;
 reader = region_file_reader("path-to-region-file");
-```
 
 or
 
-```c++
 region_file_reader reader("path-to-region-file");
-```
 
-###To read in block/heightmap data:
+To read in block/heightmap data:
 
 	std::vector<char> blocks = reader.get_chunk_blocks_at(x, z);
 	std::vector<char> heights = reader.get_chunk_heights_at(x, z);
 
-###Putting it all together:
+Putting it all together:
 
-```c++
 #include <vector>
 #include "region_file_exc.hpp" // exception handle
 #include "region_file_reader.hpp"
@@ -68,9 +63,8 @@ int main(int argc, char *argv[]) {
 	}
 	return 0;
 }
-```
 
-##License
+License
 
 Copyright(C) 2012 David Jolly <majestic53@gmail.com>
 
