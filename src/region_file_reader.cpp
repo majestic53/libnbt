@@ -20,6 +20,18 @@
 #include <sstream>
 #include "region_chunk_info.hpp"
 #include "region_file_reader.hpp"
+#include "tag/byte_array_tag.hpp"
+#include "tag/int_tag.hpp"
+
+/*
+ * Supported tags
+ */
+const std::string region_file_reader::TAGS[TAG_COUNT] = {
+		"Blocks",
+		"HeightMap",
+		"xPos",
+		"zPos",
+};
 
 /*
  * Region file reader constructor
@@ -108,21 +120,73 @@ bool region_file_reader::operator==(const region_file_reader &other) {
 }
 
 /*
- * Returns a chunk tag in a region file reader at a given x, z coord
+ * Returns a chunk tag blocks array at a given x, z coord
  */
-region_chunk_tag &get_chunk_tag_at(unsigned int x, unsigned int z) {
-
-	// TODO
-
+std::vector<int8_t> region_file_reader::get_chunk_blocks_at(unsigned int x, unsigned int z) {
+	byte_array_tag *tag = get_chunk_value_at<byte_array_tag>(x, z, TAGS[BLOCKS]);
+	if(!tag)
+		throw region_file_exc(region_file_exc::TAG_NOT_FOUND, TAGS[BLOCKS]);
+	return tag->value;
 }
 
 /*
- * Returns fill status of a chunk in a region file reader at a given x, z coord
+ * Returns a chunk tag height array at a given x, z coord
  */
-bool is_filled(unsigned int x, unsigned int z) {
+std::vector<int8_t> region_file_reader::get_chunk_heights_at(unsigned int x, unsigned int z) {
+	byte_array_tag *tag = get_chunk_value_at<byte_array_tag>(x, z, TAGS[HEIGHTS]);
+	if(!tag)
+		throw region_file_exc(region_file_exc::TAG_NOT_FOUND, TAGS[HEIGHTS]);
+	return tag->value;
+}
 
-	// TODO
+/*
+ * Returns a chunk tag x position at a given x, z coord
+ */
+int32_t region_file_reader::get_chunk_x_pos_at(unsigned int x, unsigned int z) {
+	int_tag *tag = get_chunk_value_at<int_tag>(x, z, TAGS[XPOS]);
+	if(!tag)
+		throw region_file_exc(region_file_exc::TAG_NOT_FOUND, TAGS[XPOS]);
+	return tag->value;
+}
 
+/*
+ * Returns a chunk tag z position at a given x, z coord
+ */
+int32_t region_file_reader::get_chunk_z_pos_at(unsigned int x, unsigned int z) {
+	int_tag *tag = get_chunk_value_at<int_tag>(x, z, TAGS[ZPOS]);
+	if(!tag)
+		throw region_file_exc(region_file_exc::TAG_NOT_FOUND, TAGS[ZPOS]);
+	return tag->value;
+}
+
+/*
+ * Returns a chunk tag at a given x, z coord
+ */
+region_chunk_tag &region_file_reader::get_chunk_tag_at(unsigned int x, unsigned int z) {
+	unsigned int pos = z * region_file::REGION_SIZE + x;
+
+	// check if x, z coord are out-of-bounds
+	if(pos >= region_file::CHUNK_COUNT) {
+		unsigned int coord[] = {x, z};
+		std::vector<unsigned int> coord_vec(coord, coord + 2);
+		throw region_file_exc(region_file_exc::OUT_OF_BOUNDS, coord_vec);
+	}
+	return data[pos];
+}
+
+/*
+ * Returns fill status at a given x, z coord
+ */
+bool region_file_reader::is_filled(unsigned int x, unsigned int z) {
+	unsigned int pos = z * region_file::REGION_SIZE + x;
+
+	// check if x, z coord are out-of-bounds
+	if(pos >= region_file::CHUNK_COUNT) {
+		unsigned int coord[] = {x, z};
+		std::vector<unsigned int> coord_vec(coord, coord + 2);
+		throw region_file_exc(region_file_exc::OUT_OF_BOUNDS, coord_vec);
+	}
+	return fill[pos];
 }
 
 /*

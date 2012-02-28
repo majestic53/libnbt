@@ -20,6 +20,7 @@
 #ifndef REGION_FILE_READER_HPP_
 #define REGION_FILE_READER_HPP_
 
+#include <cstdint>
 #include <string>
 #include <vector>
 #include "region_chunk_tag.hpp"
@@ -48,6 +49,29 @@ private:
 	 * Region file path
 	 */
 	std::string path;
+
+	/*
+	 * Supported tags
+	 */
+	enum TAG_NAME { BLOCKS, HEIGHTS, XPOS, ZPOS, };
+	static const std::string TAGS[];
+	static const unsigned int TAG_COUNT = 4;
+
+	/*
+	 * Returns a chunk tag value at a given x, z coord
+	 */
+	template <class T>
+	T *get_chunk_value_at(unsigned int x, unsigned int z, const std::string &name) {
+		unsigned int pos = z * region_file::REGION_SIZE + x;
+
+		// check if x, z coord are out-of-bounds
+		if(pos >= region_file::CHUNK_COUNT) {
+			unsigned int coord[] = {x, z};
+			std::vector<unsigned int> coord_vec(coord, coord + 2);
+			throw region_file_exc(region_file_exc::OUT_OF_BOUNDS, coord_vec);
+		}
+		return dynamic_cast<T *>(data[pos].get_tag_by_name(name));
+	}
 
 public:
 
@@ -86,10 +110,28 @@ public:
 	 */
 	bool operator!=(const region_file_reader &other) { return !(*this == other); }
 
-	// TODO: ADD FUNCTIONS TO HANDLE BLOCKS, X/Z, HEIGHTMAP, ETC.
+	/*
+	 * Returns a chunk tag blocks array at a given x, z coord
+	 */
+	std::vector<int8_t> get_chunk_blocks_at(unsigned int x, unsigned int z);
 
 	/*
-	 * Returns a chunk tag in a region file reader at a given x, z coord
+	 * Returns a chunk tag height array at a given x, z coord
+	 */
+	std::vector<int8_t> get_chunk_heights_at(unsigned int x, unsigned int z);
+
+	/*
+	 * Returns a chunk tag x position at a given x, z coord
+	 */
+	int32_t get_chunk_x_pos_at(unsigned int x, unsigned int z);
+
+	/*
+	 * Returns a chunk tag z position at a given x, z coord
+	 */
+	int32_t get_chunk_z_pos_at(unsigned int x, unsigned int z);
+
+	/*
+	 * Returns a chunk tag at a given x, z coord
 	 */
 	region_chunk_tag &get_chunk_tag_at(unsigned int x, unsigned int z);
 
@@ -104,7 +146,7 @@ public:
 	std::string get_path(void) { return path; }
 
 	/*
-	 * Returns fill status of a chunk in a region file reader at a given x, z coord
+	 * Returns fill status at a given x, z coord
 	 */
 	bool is_filled(unsigned int x, unsigned int z);
 
