@@ -8,12 +8,17 @@ Instructions for compiling libnbt from source code
 Requirements (tested on):
 	- g++ 4.4.3 or newer
 	- make 3.8 or newer
+	- boost regex 1.42 or newer
+	- zlib 1.2.3.3 or newer
 
 For Debian:
-	- sudo apt-get install build-essential make
+	- sudo apt-get install build-essential make zlib-dev libboost1.42-all-dev
 
-Building:
+Building (produces a static lib):
 	- make
+
+To use static library:
+	- g++ -o <EXECUTABLE NAME> <MAIN>.cpp -std=c++0x -lboost_regex -lz -I <PATH_TO_LIBNBT> -L <PATH_TO_LIBNBT> -lnbt
 
 Usage
 -------
@@ -24,12 +29,12 @@ allocations/deallocations are handled internally within the reader.
 
 To instantiate a region_file_reader object, either:
 
-region_file_reader reader;
-reader = region_file_reader("path-to-region-file");
+	region_file_reader reader;
+	reader = region_file_reader("path-to-region-file");
 
 or
 
-region_file_reader reader("path-to-region-file");
+	region_file_reader reader("path-to-region-file");
 
 To read in block/heightmap data:
 
@@ -38,9 +43,10 @@ To read in block/heightmap data:
 
 Putting it all together:
 
+#include <cstdint>
 #include <iostream>
 #include <vector>
-#include "region_file_exc.hpp" // exception handle
+#include "region_file_exc.hpp"
 #include "region_file_reader.hpp"
 
 int main(int argc, char *argv[]) {
@@ -48,8 +54,8 @@ int main(int argc, char *argv[]) {
 	// instantiate a file reader
 	region_file_reader reader;
 
-	// create vectors to hold block/height data
-	std::vector<char> blocks, heights;
+	// create vectors to hold block/height data (int8_t == char)
+	std::vector<int8_t> blocks, heights;
 
 	try {
 
