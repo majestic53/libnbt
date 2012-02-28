@@ -1,6 +1,22 @@
 libnbt is a C++ library for reading named byte tags
 
+Building
+-------
+
+Instructions for compiling libnbt from source code
+
+Requirements (tested on):
+	- g++ 4.4.3 or newer
+	- make 3.8 or newer
+
+For Debian:
+	- sudo apt-get install build-essential make
+
+Building:
+	- make
+
 Usage
+-------
 
 The easiest way to access block/heightmap data for each chunk is to
 use the region_file_reader object. No cleanup is necessary. All 
@@ -66,6 +82,7 @@ int main(int argc, char *argv[]) {
 }
 
 License
+-------
 
 Copyright(C) 2012 David Jolly <majestic53@gmail.com>
 
