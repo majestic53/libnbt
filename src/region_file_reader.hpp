@@ -113,22 +113,22 @@ public:
 	/*
 	 * Returns a chunk tag blocks array at a given x, z coord
 	 */
-	std::vector<int8_t> get_chunk_blocks_at(unsigned int x, unsigned int z);
+	bool get_chunk_blocks_at(unsigned int x, unsigned int z, std::vector<int8_t> &value);
 
 	/*
 	 * Returns a chunk tag height array at a given x, z coord
 	 */
-	std::vector<int8_t> get_chunk_heights_at(unsigned int x, unsigned int z);
+	bool get_chunk_heights_at(unsigned int x, unsigned int z, std::vector<int8_t> &value);
 
 	/*
 	 * Returns a chunk tag x position at a given x, z coord
 	 */
-	int32_t get_chunk_x_pos_at(unsigned int x, unsigned int z);
+	bool get_chunk_x_pos_at(unsigned int x, unsigned int z, int32_t &value);
 
 	/*
 	 * Returns a chunk tag z position at a given x, z coord
 	 */
-	int32_t get_chunk_z_pos_at(unsigned int x, unsigned int z);
+	bool get_chunk_z_pos_at(unsigned int x, unsigned int z, int32_t &value);
 
 	/*
 	 * Returns a chunk tag at a given x, z coord

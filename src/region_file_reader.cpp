@@ -122,41 +122,45 @@ bool region_file_reader::operator==(const region_file_reader &other) {
 /*
  * Returns a chunk tag blocks array at a given x, z coord
  */
-std::vector<int8_t> region_file_reader::get_chunk_blocks_at(unsigned int x, unsigned int z) {
+bool region_file_reader::get_chunk_blocks_at(unsigned int x, unsigned int z, std::vector<int8_t> &value) {
 	byte_array_tag *tag = get_chunk_value_at<byte_array_tag>(x, z, TAGS[BLOCKS]);
 	if(!tag)
-		throw region_file_exc(region_file_exc::TAG_NOT_FOUND, TAGS[BLOCKS]);
-	return tag->value;
+		return false;
+	value = tag->value;
+	return true;
 }
 
 /*
  * Returns a chunk tag height array at a given x, z coord
  */
-std::vector<int8_t> region_file_reader::get_chunk_heights_at(unsigned int x, unsigned int z) {
+bool region_file_reader::get_chunk_heights_at(unsigned int x, unsigned int z, std::vector<int8_t> &value) {
 	byte_array_tag *tag = get_chunk_value_at<byte_array_tag>(x, z, TAGS[HEIGHTS]);
 	if(!tag)
-		throw region_file_exc(region_file_exc::TAG_NOT_FOUND, TAGS[HEIGHTS]);
-	return tag->value;
+		return false;
+	value = tag->value;
+	return true;
 }
 
 /*
  * Returns a chunk tag x position at a given x, z coord
  */
-int32_t region_file_reader::get_chunk_x_pos_at(unsigned int x, unsigned int z) {
+bool region_file_reader::get_chunk_x_pos_at(unsigned int x, unsigned int z, int32_t &value) {
 	int_tag *tag = get_chunk_value_at<int_tag>(x, z, TAGS[XPOS]);
 	if(!tag)
-		throw region_file_exc(region_file_exc::TAG_NOT_FOUND, TAGS[XPOS]);
-	return tag->value;
+		return false;
+	value = tag->value;
+	return true;
 }
 
 /*
  * Returns a chunk tag z position at a given x, z coord
  */
-int32_t region_file_reader::get_chunk_z_pos_at(unsigned int x, unsigned int z) {
+bool region_file_reader::get_chunk_z_pos_at(unsigned int x, unsigned int z, int32_t &value) {
 	int_tag *tag = get_chunk_value_at<int_tag>(x, z, TAGS[ZPOS]);
 	if(!tag)
-		throw region_file_exc(region_file_exc::TAG_NOT_FOUND, TAGS[ZPOS]);
-	return tag->value;
+		return false;
+	value = tag->value;
+	return true;
 }
 
 /*

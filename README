@@ -72,8 +72,8 @@ int main(int argc, char *argv[]) {
 					continue;
 
 				// if everything goes well, retrieve the block/height data
-				blocks = reader.get_chunk_blocks_at(x, z);
-				heights = reader.get_chunk_heights_at(x, z);
+				reader.get_chunk_blocks_at(x, z, blocks);
+				reader.get_chunk_heights_at(x, z, heights);
 
 				// ...
 			}
