@@ -38,8 +38,8 @@ or
 
 To read in block/heightmap data:
 
-	std::vector<char> blocks = reader.get_chunk_blocks_at(x, z);
-	std::vector<char> heights = reader.get_chunk_heights_at(x, z);
+	std::vector<int8_t> blocks = reader.get_chunk_blocks_at(x, z);
+	std::vector<int8_t> heights = reader.get_chunk_heights_at(x, z);
 
 Putting it all together:
 
