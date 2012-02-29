@@ -70,6 +70,13 @@ private:
 			std::vector<unsigned int> coord_vec(coord, coord + 2);
 			throw region_file_exc(region_file_exc::OUT_OF_BOUNDS, coord_vec);
 		}
+
+		// cache tag data if cache-miss occurs
+		if(fill[pos]
+		        && data[pos].empty()) {
+			region_file file(path);
+			file.get_chunk_tag(x, z, data[pos]);
+		}
 		return dynamic_cast<T *>(data[pos].get_tag_by_name(name));
 	}
 

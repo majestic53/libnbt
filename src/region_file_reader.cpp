@@ -74,7 +74,7 @@ region_file_reader::region_file_reader(const std::string &path) : path(path) {
 			file.get_chunk_info(j, i, info);
 			if(!info.get_position())
 				continue;
-			file.get_chunk_tag(j, i, data[pos]);
+			//file.get_chunk_tag(j, i, data[pos]);
 			fill[pos] = true;
 			fill_count++;
 		}
