@@ -1,6 +1,6 @@
 libnbt is a C++ library for reading named byte tags
 
-(This library will not work with maps produced using the anvil format (.mcr))
+(This library will not work with maps produced using the anvil format (.mca))
 
 Building
 -------
