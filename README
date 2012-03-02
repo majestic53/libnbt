@@ -50,8 +50,8 @@ Parsing block/heightmap data:
 	Data is stored in the chunks from the top-left to bottom right, and all coord are relative to
 	the chunk itself.
 
-	Block{ x, z, y } = y + z * 128 + x * 2048
-	HeightMap{ x, z } = z * 32 + x
+	Block {x, z, y} = y + z * 128 + x * 2048
+	HeightMap {x, z} = x + z * 16
 
 Putting it all together:
 
